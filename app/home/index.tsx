@@ -9,7 +9,7 @@ export default function Index() {
         alignItems: "center",
       }}
     >
-      <Text className="text-3xl text-red-500">This is home page</Text>
+      <Text className="text-3xl text-primary-900 font-semibold">This is home page</Text>
     </View>
   );
 }
