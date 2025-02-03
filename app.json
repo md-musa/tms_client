@@ -32,8 +32,25 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/SFPRODISPLAYBLACKITALIC.OTF",
+            "./assets/fonts/SFPRODISPLAYBOLD.OTF",
+            "./assets/fonts/SFPRODISPLAYHEAVYITALIC.OTF",
+            "./assets/fonts/SFPRODISPLAYLIGHTITALIC.OTF",
+            "./assets/fonts/SFPRODISPLAYMEDIUM.OTF",
+            "./assets/fonts/SFPRODISPLAYREGULAR.OTF",
+            "./assets/fonts/SFPRODISPLAYSEMIBOLDITALIC.OTF",
+            "./assets/fonts/SFPRODISPLAYTHINITALIC.OTF",
+            "./assets/fonts/SFPRODISPLAYULTRALIGHTITALIC.OTF"
+          ]
+        }
       ]
     ],
+
     "experiments": {
       "typedRoutes": true
     }
