@@ -6,7 +6,10 @@ const RootLayout = () => {
   return (
     <Tabs screenOptions={{headerShown:false}}>
       <Tabs.Screen name="index" />
-      <Tabs.Screen name="explore" />
+      <Tabs.Screen name="schedules" />
+      <Tabs.Screen name="broadcast" />
+      <Tabs.Screen name="notification" />
+      <Tabs.Screen name="profile" />
     </Tabs>
   )
 
