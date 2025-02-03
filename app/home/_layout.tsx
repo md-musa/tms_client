@@ -4,7 +4,7 @@ import { Stack, Tabs } from 'expo-router'
 
 const RootLayout = () => {
   return (
-    <Tabs>
+    <Tabs screenOptions={{headerShown:false}}>
       <Tabs.Screen name="index" />
       <Tabs.Screen name="explore" />
     </Tabs>
