@@ -9,7 +9,7 @@ const RootLayout = () => {
       <Tabs.Screen name="schedules" />
       <Tabs.Screen name="broadcast" />
       <Tabs.Screen name="notification" />
-      <Tabs.Screen name="profile" />
+      <Tabs.Screen name="setting" />
     </Tabs>
   )
 

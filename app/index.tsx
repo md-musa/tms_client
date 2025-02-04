@@ -31,11 +31,11 @@ const Start = () => {
           </View>
 
           <Link
-              href="/home"
-              className="bg-gray-200 border border-gray-300 text-primary-900 px-5 py-3 font-semibold text-center rounded-full"
-            >
-              Homepage
-            </Link>
+            href="/home"
+            className="bg-gray-200 border border-gray-300 text-primary-900 px-5 py-3 font-semibold text-center rounded-full"
+          >
+            Homepage
+          </Link>
         </View>
       </View>
     </SafeAreaView>
