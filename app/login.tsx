@@ -4,12 +4,21 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { loginUser } from "@/services/authService";
+import { useAuth } from "@/contexts/AuthContext";
+
 const Login = () => {
+  const { user, login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  console.log("User data ", user);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     console.log({ email, password });
+    const res = await loginUser({ email, password });
+    console.log(res);
+    const { accessToken } = res?.data.data;
+    login(accessToken);
   };
 
   return (
@@ -50,7 +59,7 @@ const Login = () => {
             />
           </View>
           <View className="">
-            <TouchableOpacity className="w-full bg-tertiary-900 p-3 rounded-xl my-2">
+            <TouchableOpacity onPress={handleLogin} className="w-full bg-tertiary-900 p-3 rounded-xl my-2">
               <Text className="text-body text-center text-white"> Login </Text>
             </TouchableOpacity>
           </View>
