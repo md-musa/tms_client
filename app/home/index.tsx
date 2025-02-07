@@ -8,13 +8,16 @@ import { Ionicons } from "@expo/vector-icons";
 import Header from "@/components/Header";
 import { useAuth } from "@/contexts/AuthContext";
 import apiClient from "@/config/axiosConfig";
+import { getSchedulesByRoute } from "@/services/scheduleService";
+// import { parse, isAfter, compareAsc } from "date-fns"; 
 
 export default function Index() {
   const { userData } = useAuth();
   const [route, setRoute] = useState(userData.user.routeId._id);
   const [availRoutes, setAvailRoutes] = useState([]);
   const [selectedRoute, setSelectedRoute] = useState("DSC to Uttara");
-  const [schedules, setSchedules] = useState([
+  const [schedules, setSchedules] = useState([]);
+  const [schedulesTem, setSchedulesTem] = useState([
     {
       route: "DSC to Uttara",
       buses: [
@@ -109,7 +112,39 @@ export default function Index() {
     fetchRoutes();
   }, []);
 
-  const filteredSchedules = schedules.find((schedule) => schedule.route === selectedRoute)?.buses;
+  // Function to find the next schedule
+  // const findNextSchedule = (scheduleList) => {
+  //   const currentTime = new Date();
+
+  //   // Parse times and sort schedules
+  //   const sortedSchedules = [...scheduleList].sort((a, b) =>
+  //     compareAsc(parse(a.time, "HH:mm", currentTime), parse(b.time, "HH:mm", currentTime))
+  //   );
+
+  //   // Find the first schedule that is after the current time
+  //   return sortedSchedules.find((schedule) => isAfter(parse(schedule.time, "HH:mm", currentTime), currentTime)) || null; // Return null if no upcoming schedule is found
+  // };
+
+  useEffect(() => {
+    const fetchSchedules = async () => {
+      try {
+        const today = new Date().toLocaleString("en-US", { weekday: "long" }).toLowerCase();
+        console.log("routeId =", route, "today =", today);
+
+        const { data } = await apiClient.get(`/schedules/get-single-route-schedule`, {
+          params: { routeId: route, day: today },
+        });
+
+        console.log("Schedules data", data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    if (route) fetchSchedules();
+  }, [route]);
+
+  const filteredSchedules = schedulesTem.find((schedule) => schedule.route === selectedRoute)?.buses;
 
   return (
     <ScrollView className="bg-[#f4f4f4] h-full">
@@ -133,7 +168,7 @@ export default function Index() {
           >
             <Picker.Item label="Select a route" value="" />
             {availRoutes?.map((route) => (
-              <Picker.Item key={route._id} label={`${route.startLocation} <> ${route.endLocation}` } value={route._id} />
+              <Picker.Item key={route._id} label={`${route.startLocation} <> ${route.endLocation}`} value={route._id} />
             ))}
           </Picker>
         </View>
