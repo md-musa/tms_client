@@ -8,17 +8,14 @@ import { loginUser } from "@/services/authService";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Login = () => {
-  const { user, login } = useAuth();
+  const { userData, login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  console.log("User data ", user);
+  console.log("User data ", userData);
 
   const handleLogin = async () => {
     console.log({ email, password });
-    const res = await loginUser({ email, password });
-    console.log(res);
-    const { accessToken } = res?.data.data;
-    login(accessToken);
+    login({ email, password });
   };
 
   return (

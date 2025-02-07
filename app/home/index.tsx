@@ -1,14 +1,18 @@
 import { Picker } from "@react-native-picker/picker";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Image, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import busImage from "@/assets/images/bug_front.png";
 import MapView, { Marker } from "react-native-maps";
 import { TouchableOpacity, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import Header from "@/components/Header";
+import { useAuth } from "@/contexts/AuthContext";
+import apiClient from "@/config/axiosConfig";
 
 export default function Index() {
-  const [route, setRoute] = useState("");
+  const { userData } = useAuth();
+  const [route, setRoute] = useState(userData.user.routeId._id);
+  const [availRoutes, setAvailRoutes] = useState([]);
   const [selectedRoute, setSelectedRoute] = useState("DSC to Uttara");
   const [schedules, setSchedules] = useState([
     {
@@ -91,24 +95,46 @@ export default function Index() {
     },
   ]);
 
+  useEffect(() => {
+    const fetchRoutes = async () => {
+      try {
+        const res = await apiClient.get("/routes");
+        setAvailRoutes(res.data.data);
+      } catch (err) {
+        console.error("API Error:", err.message);
+        console.log(err);
+      }
+    };
+
+    fetchRoutes();
+  }, []);
+
   const filteredSchedules = schedules.find((schedule) => schedule.route === selectedRoute)?.buses;
 
   return (
     <ScrollView className="bg-[#f4f4f4] h-full">
+      <Header />
       {/* Next buses */}
+
       <View className="bg-primary-1000 p-4 mx-2 rounded-md">
         {/* Select route */}
         <View className="flex flex-row items-center bg-white border border-gray-300 rounded-xl px-4">
           <Image source={busImage} resizeMode="contain" style={{ width: 30, height: 30 }} />
+          {/* <Picker
+            selectedValue={route}
+            onValueChange={(itemValue) => setRoute(itemValue)}
+            
+          ></Picker> */}
+
           <Picker
             selectedValue={route}
             onValueChange={(itemValue) => setRoute(itemValue)}
             style={{ flex: 1, backgroundColor: "white" }}
           >
             <Picker.Item label="Select a route" value="" />
-            <Picker.Item label="Campus to Uttara" value="route1" />
-            <Picker.Item label="Campus Mirpur-10" value="route2" />
-            <Picker.Item label="Route 3" value="route3" />
+            {availRoutes?.map((route) => (
+              <Picker.Item key={route._id} label={`${route.startLocation} <> ${route.endLocation}` } value={route._id} />
+            ))}
           </Picker>
         </View>
         {/* Recent bus schedule */}
@@ -223,9 +249,6 @@ export default function Index() {
                     </View>
                   </View>
                 </View>
-                
-                
-                
               ))}
             </View>
           </ScrollView>

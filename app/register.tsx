@@ -7,28 +7,24 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Picker } from "@react-native-picker/picker";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import apiClient from "@/config/axiosConfig";
-import axios from "axios";
-import { registerUser } from "@/services/authService";
+import { useAuth } from "@/contexts/AuthContext";
+
 const Register = () => {
+  const { registration } = useAuth();
   const [name, setName] = useState("");
   const [routeId, setRouteId] = useState("");
   const [role, setRole] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  interface Route {
-    _id: string;
-    name: string;
-  }
 
-  const [routes, setRoutes] = useState<Route[]>([]);
+  const [availRoutes, setAvailRoutes] = useState([]);
 
   useEffect(() => {
     const fetchRoutes = async () => {
       try {
         const res = await apiClient.get("/routes");
         const data = res.data.data;
-        console.log(data);
-        setRoutes(data);
+        setAvailRoutes(data);
       } catch (err) {
         console.error("API Error:", err.message);
         console.log(err);
@@ -37,11 +33,9 @@ const Register = () => {
 
     fetchRoutes();
   }, []);
-
-  const handleRegister = () => {
-    console.log({ name, routeId, role, email, password });
-    registerUser({ name, routeId, role, email, password });
-  };
+  function handleRegister() {
+    registration({ name, email, routeId, role, password });
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -73,7 +67,7 @@ const Register = () => {
               <View className="border border-gray-300 rounded-xl">
                 <Picker selectedValue={routeId} onValueChange={(itemValue) => setRouteId(itemValue)} className="">
                   <Picker.Item label="Select a route" value="" />
-                  {routes?.map((route) => (
+                  {availRoutes?.map((route) => (
                     <Picker.Item key={route._id} label={route.name} value={route._id} />
                   ))}
                 </Picker>

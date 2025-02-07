@@ -1,7 +1,6 @@
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import { View, Text, Image } from "react-native";
 import React from "react";
 import { Link } from "expo-router";
-import { Linking } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import coverImage from "@/assets/images/login_bg.png";
 
