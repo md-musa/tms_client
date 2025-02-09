@@ -12,10 +12,11 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const loadUserData = async () => {
       try {
-        const data = await SecureStorage.getItem("auth");
-        if (data) {
-          console.log("Fetched from storage:", data);
-          setUserData(JSON.parse(data));
+        const auth = await SecureStorage.getItem("auth-1");
+        const route = await SecureStorage.getItem("route");
+        if (auth && route) {
+          console.log("Fetched from storage:", auth, route);
+          setUserData({ ...JSON.parse(auth), route: JSON.parse(route) });
 
           router.push("/home");
         }
@@ -27,12 +28,28 @@ export const AuthProvider = ({ children }) => {
     loadUserData();
   }, []);
 
+  const updateRoute = async (routeData) => {
+    console.log("Route data------------\n", routeData);
+    try {
+      await SecureStorage.setItem("route", JSON.stringify(routeData));
+      setUserData({ ...userData, route: routeData });
+    } catch (err) {
+      console.error("Update Route Error:", err);
+    }
+  };
+
   const registration = async (data) => {
     try {
       const result = await registerUser(data);
       console.log("Registration Success:", result);
-      await SecureStorage.setItem("auth", JSON.stringify(result.data.data));
-      setUserData(result.data.data);
+
+      const { accessToken, user } = result.data.data;
+      const { name, email, role, routeId } = user;
+
+      await SecureStorage.setItem("auth-1", JSON.stringify({ accessToken, name, email, role }));
+      await SecureStorage.setItem("route", JSON.stringify({ route: routeId }));
+
+      setUserData({ accessToken, name, email, role, route: routeId });
       router.push("/home");
     } catch (err) {
       console.error("Registration Error:", err);
@@ -43,8 +60,14 @@ export const AuthProvider = ({ children }) => {
     try {
       const result = await loginUser(data);
       console.log("Login Success:", result);
-      await SecureStorage.setItem("auth", JSON.stringify(result.data.data));
-      setUserData(result.data.data);
+
+      const { accessToken, user } = result.data.data;
+      const { name, email, role, routeId } = user;
+
+      await SecureStorage.setItem("auth-1", JSON.stringify({ accessToken, name, email, role }));
+      await SecureStorage.setItem("route", JSON.stringify({ route: routeId }));
+
+      setUserData({ accessToken, name, email, role, route: routeId });
       router.push("/home");
     } catch (err) {
       console.error("Login Error:", err);
@@ -53,14 +76,19 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await SecureStorage.removeItem("auth"); // Correct method name
+      await SecureStorage.removeItem("auth-1");
+      await SecureStorage.removeItem("route");
       setUserData(null);
     } catch (err) {
       console.error("Logout Error:", err);
     }
   };
 
-  return <AuthContext.Provider value={{ userData, login, registration, logout }}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ userData, login, registration, logout, updateRoute }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 // Custom Hook to Use Context

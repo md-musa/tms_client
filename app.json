@@ -15,7 +15,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.md_musa.client2"
     },
     "web": {
       "bundler": "metro",
@@ -33,10 +34,23 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "@maplibre/maplibre-react-native"
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "92e6dd70-394b-4543-95d0-4cc157e36c21"
+      },
+      "androidMetadata": {
+        "com.mapbox.token": "your_dummy_mapbox_token"
+      }
+    },
+    "owner": "md_musa"
   }
 }

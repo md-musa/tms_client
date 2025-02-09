@@ -15,5 +15,5 @@
     "expo-env.d.ts",
     "babel.config.js",
     "nativewind-env.d.ts"
-, "contexts/AuthContext.js"  ]
+, "contexts/AuthContext.js", "app/home/index.jsx"  ]
 }

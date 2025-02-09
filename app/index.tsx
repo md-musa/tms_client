@@ -1,11 +1,11 @@
-import { View, Text, Image } from "react-native";
+import { View, Text, Image, StyleSheet } from "react-native";
 import React from "react";
 import { Link } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import coverImage from "@/assets/images/login_bg.png";
-
 const Start = () => {
   return (
+    
     <SafeAreaView className="flex justify-end h-full">
       <Image source={coverImage} className="w-2/3 h-[33%] mx-auto rounded-full mt-5" />
 
@@ -39,7 +39,6 @@ const Start = () => {
       </View>
     </SafeAreaView>
   );
-  // Hello there
 };
 
 export default Start;
