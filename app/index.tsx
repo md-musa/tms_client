@@ -39,6 +39,7 @@ const Start = () => {
       </View>
     </SafeAreaView>
   );
+  // Hello there
 };
 
 export default Start;
