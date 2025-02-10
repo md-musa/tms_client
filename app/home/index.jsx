@@ -1,6 +1,6 @@
 import { Picker } from "@react-native-picker/picker";
 import { useEffect, useState } from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Alert, Image, StyleSheet, Text, View } from "react-native";
 import busImage from "@/assets/images/bug_front.png";
 import { TouchableOpacity, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -13,6 +13,11 @@ import * as MapLibreGL from "@maplibre/maplibre-react-native";
 import uttaraToDiuRoute from "@/assets/routes/uttara_diu.json";
 import campusArea from "@/assets/routes/campus.json";
 import mirpur10ToDiuRoute from "@/assets/routes/mirpur_10_diu.json";
+import redMarker from "@/assets/images/red-marker.png";
+import busMarker from "@/assets/images/bus-marker.png";
+import io from "socket.io-client";
+
+const socket = io("http://192.168.1.6:5000");
 
 export default function Index() {
   const { userData, updateRoute } = useAuth();
@@ -103,6 +108,8 @@ export default function Index() {
     },
   ]);
 
+  // const [busLoc, setBusLoc] = useState({});
+
   useEffect(() => {
     const fetchRoutes = async () => {
       try {
@@ -138,6 +145,46 @@ export default function Index() {
     if (currentRoute) fetchSchedules();
   }, [currentRoute]);
 
+  // useEffect(() => {
+  //   socket.on("bus-location-update", (data) => {
+  //     const { busId } = data;
+  //     console.log("🚍 ", JSON.stringify(data, null, 2));
+
+  //     setBusLoc(data);
+  //     console.log("State", busLoc);
+  //   });
+
+  //   const joinRoute = (routeId) => {
+  //     if (!routeId) return Alert.alert("route id null");
+  //     socket.emit("join-route", routeId);
+  //     console.log(`Joined route: ${routeId}`);
+  //   };
+  //   if (userData) joinRoute(userData?.route._id);
+  // }, []);
+
+  const [busLocations, setBusLocations] = useState({}); // Store buses as an object
+
+  useEffect(() => {
+    socket.on("bus-location-update", (data) => {
+      setBusLocations((prevBuses) => ({
+        ...prevBuses,
+        [data.busId]: data, // O(1) update using object key
+      }));
+    });
+
+    const joinRoute = (routeId) => {
+      if (!routeId) return Alert.alert("Route ID is null");
+      socket.emit("join-route", routeId);
+      console.log(`Joined route: ${routeId}`);
+    };
+
+    if (userData) joinRoute(userData?.route._id);
+
+    return () => {
+      socket.off("bus-location-update");
+    };
+  }, []);
+
   let toCampusStudent, fromCampusStudent, toCampusFaculty, fromCampusFaculty;
   if (schedules) {
     toCampusStudent = findOngoingOrNextSchedule(schedules.to_campus.student);
@@ -159,6 +206,20 @@ export default function Index() {
     else if (currentRoute.endLocation == "Mirpur-10") return mirpur10ToDiuRoute;
     else return { type: "FeatureCollection", features: [] };
   }
+
+  const x = Object.entries(busLocations).map(([busId, data]) => ({
+    type: "Feature",
+    geometry: {
+      type: "Point",
+      coordinates: [data.longitude, data.latitude], // Marker 1
+    },
+    properties: {
+      icon: "marker",
+      title: data.name || busId,
+    },
+  }));
+
+  console.log("🏁\n", JSON.stringify(x, null, 2));
 
   return (
     <View>
@@ -208,8 +269,8 @@ export default function Index() {
             </View>
 
             <View className="flex-row">
-            <Text className="text-white text-md flex-1">{`${currentRoute.endLocation} to ${currentRoute.startLocation}`}</Text>
-            <Text className="text-white text-md flex-1 text-center">
+              <Text className="text-white text-md flex-1">{`${currentRoute.endLocation} to ${currentRoute.startLocation}`}</Text>
+              <Text className="text-white text-md flex-1 text-center">
                 {toCampusStudent ? `${toCampusStudent.formattedTime} (${toCampusStudent.status})` : "No schedule"}
               </Text>
               <Text className="text-white text-md flex-1 text-right">
@@ -226,13 +287,11 @@ export default function Index() {
         <View className="h-full rounded-md p-2 bg-tertiary-700 mx-2 mt-2">
           {/* -------------- Map -------------------- */}
           <View className="relative h-1/3 rounded-lg overflow-hidden shadow-lg border border-primary-600">
-            <MapLibreGL.MapView style={styles.map}>
+            {/* <MapLibreGL.MapView style={styles.map}>
               <MapLibreGL.Camera
-                zoomLevel={12}
+                zoomLevel={11}
                 centerCoordinate={[90.34984171243167, 23.859482749844815]} // Center on route start
               />
-
-              {/* OpenStreetMap Raster Layer */}
               <MapLibreGL.RasterSource
                 id="osm"
                 tileUrlTemplates={["https://tile.openstreetmap.org/{z}/{x}/{y}.png"]}
@@ -240,6 +299,34 @@ export default function Index() {
               >
                 <MapLibreGL.RasterLayer id="osmLayer" sourceID="osm" />
               </MapLibreGL.RasterSource>
+
+              <MapLibreGL.Images images={{ marker: busMarker }} />
+
+              <MapLibreGL.ShapeSource
+                id="busMarkers"
+                shape={{
+                  type: "FeatureCollection",
+                  features: x,
+                }}
+              >
+                <MapLibreGL.SymbolLayer
+                  id="busMarkerLayer"
+                  style={{
+                    iconImage: "marker",
+                    iconSize: 0.05,
+                    textField: ["get", "title"],
+                    textSize: 14,
+                    textColor: "#000000",
+                    textHaloColor: "#FFFFFF",
+                    textHaloWidth: 1,
+                    textOffset: [0, 1.5],
+                  }}
+                />
+              </MapLibreGL.ShapeSource>
+
+              <MapLibreGL.ShapeSource id="polygonSource" shape={campusArea}>
+                <MapLibreGL.FillLayer id="polygonLayer" style={{ fillColor: "rgba(255, 0, 100, 0.4)" }} />
+              </MapLibreGL.ShapeSource>
 
               <MapLibreGL.ShapeSource id="routeSource" shape={selectRoutePolyline()}>
                 <MapLibreGL.LineLayer
@@ -252,9 +339,66 @@ export default function Index() {
                   }}
                 />
               </MapLibreGL.ShapeSource>
+            </MapLibreGL.MapView> */}
 
+            <MapLibreGL.MapView style={styles.map}>
+              {/* Camera */}
+              <MapLibreGL.Camera
+                zoomLevel={11}
+                centerCoordinate={[90.34984171243167, 23.859482749844815]} // Center on route start
+              />
+
+              {/* OSM Raster Layer */}
+              <MapLibreGL.RasterSource
+                id="osm"
+                tileUrlTemplates={["https://tile.openstreetmap.org/{z}/{x}/{y}.png"]}
+                tileSize={256}
+              >
+                <MapLibreGL.RasterLayer id="osmLayer" sourceID="osm" />
+              </MapLibreGL.RasterSource>
+
+              {/* Load Marker Image */}
+              <MapLibreGL.Images images={{ marker: busMarker }} />
+
+              {/* Polygon Layer */}
               <MapLibreGL.ShapeSource id="polygonSource" shape={campusArea}>
                 <MapLibreGL.FillLayer id="polygonLayer" style={{ fillColor: "rgba(255, 0, 100, 0.4)" }} />
+              </MapLibreGL.ShapeSource>
+
+              {/* Polyline Layer */}
+              <MapLibreGL.ShapeSource id="routeSource" shape={selectRoutePolyline()}>
+                <MapLibreGL.LineLayer
+                  id="routeLayer"
+                  style={{
+                    lineColor: "blue", // Line color
+                    lineWidth: 2,
+                    lineCap: "round",
+                    lineJoin: "round",
+                  }}
+                />
+              </MapLibreGL.ShapeSource>
+
+              {/* Marker Layer (Added LAST to ensure it's on top) */}
+              <MapLibreGL.ShapeSource
+                id="busMarkers"
+                shape={{
+                  type: "FeatureCollection",
+                  features: x,
+                }}
+              >
+                <MapLibreGL.SymbolLayer
+                  id="busMarkerLayer"
+                  style={{
+                    iconImage: "marker",
+                    iconSize: 0.05,
+                    textField: ["get", "title"],
+                    textSize: 14,
+                    textColor: "#000000",
+                    textHaloColor: "#FFFFFF",
+                    textHaloWidth: 1,
+                    textOffset: [0, 1.5],
+                  }}
+                />
               </MapLibreGL.ShapeSource>
             </MapLibreGL.MapView>
 
@@ -289,11 +433,8 @@ export default function Index() {
                 onPress={() => setSelectedRoute("DSC to Uttara")}
               >
                 <Text className="text-white">
-
-                {`${userData?.route?.startLocation} to ${userData?.route?.endLocation}`}
-
+                  {`${userData?.route?.startLocation} to ${userData?.route?.endLocation}`}
                 </Text>
-
               </TouchableOpacity>
               <TouchableOpacity
                 className={`rounded-md px-8 py-3 w-[45%] font-semibold text-black ${
@@ -302,8 +443,7 @@ export default function Index() {
                 onPress={() => setSelectedRoute("Uttara to DSC")}
               >
                 <Text className="text-white">
-                {`${userData?.route?.endLocation} to ${userData?.route?.startLocation}`}
-
+                  {`${userData?.route?.endLocation} to ${userData?.route?.startLocation}`}
                 </Text>
               </TouchableOpacity>
             </View>
