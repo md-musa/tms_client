@@ -7,24 +7,22 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/contexts/AuthContext";
 import apiClient from "@/config/axiosConfig";
 import { findOngoingOrNextSchedule } from "@/utils/scheduleHelper";
-import { Link } from "expo-router";
+import { Link,  useRouter } from "expo-router";
 import * as MapLibreGL from "@maplibre/maplibre-react-native";
 import campusArea from "@/assets/routes/campus.json";
 import busMarker from "@/assets/images/bus-marker.png";
 import io from "socket.io-client";
 import { selectRoutePolyline, generateMarkers } from "@/utils/mappingHelper";
 
-const socket = io("http://192.168.1.14:5000");
+export const socket = io("http://192.168.1.11:5000");
 
 export default function Index() {
   const { userData, updateRoute } = useAuth();
   const [currentRoute, setCurrentRoute] = useState(userData?.route);
 
   const [availRoutes, setAvailRoutes] = useState([]);
-  const [selectedRoute, setSelectedRoute] = useState("DSC to Uttara");
   const [schedules, setSchedules] = useState(null);
   const [currentlyConnectedUserCount, setCurrentlyConnectedUserCount] = useState(0);
-
 
   useEffect(() => {
     const fetchRoutes = async () => {
@@ -65,6 +63,7 @@ export default function Index() {
 
   useEffect(() => {
     socket.on("bus-location-update", (data) => {
+      console.log(JSON.stringify(data, null, 2));
       if (!data) {
         console.log("⚠ error", data);
         return;
@@ -97,8 +96,6 @@ export default function Index() {
     fromCampusFaculty = findOngoingOrNextSchedule(schedules.from_campus.faculty);
   }
 
-  const filteredSchedules = schedulesTem.find((schedule) => schedule.route === selectedRoute)?.buses;
-
   function handleRouteChange(selectedRouteId) {
     const selectedRouteData = availRoutes.filter((r) => r._id == selectedRouteId)[0];
     setCurrentRoute(selectedRouteData);
@@ -106,6 +103,8 @@ export default function Index() {
   }
 
   const busesMarkers = generateMarkers(busLocations);
+
+  const router = useRouter();
 
   return (
     <View className="bg-[#e9e9e9] flex-1">
@@ -232,22 +231,26 @@ export default function Index() {
           </MapLibreGL.ShapeSource>
         </MapLibreGL.MapView>
 
-        {/* /* Watching Count Label */}
+        {/* Watching Count Label */}
         <View className="absolute top-3 left-3 bg-black/50 px-3 py-1 rounded-lg">
           <Text className="text-white text-sm">Watching: {currentlyConnectedUserCount}</Text>
         </View>
 
-        {/* /* Route Name Label */}
+        {/* Route Name Label */}
         <View className="absolute bottom-2 left-2 bg-black/75 px-1 rounded-lg flex-row items-center">
           <Ionicons name="bus" size={16} color="white" style={{ marginRight: 4 }} />
           <Text className="text-white text-sm">{busesMarkers.length} Buses available</Text>
         </View>
 
-        {/* /* Fullscreen Icon */}
-
-        <TouchableOpacity className="absolute flex-row px-2 bottom-3 right-3 bg-white p-2 rounded-full shadow-lg">
-          <Text className="text-black text-base mx-2">Tap to Track</Text>
-          <Ionicons name="expand" size={22} color="black" />
+        {/* Fullscreen Icon */}
+        <TouchableOpacity
+          className="absolute  bottom-3 right-3 bg-white rounded-full shadow-lg flex-row p-2 items-center justify-center"
+          onPress={() => router.push("/home/watchBusLocation")}
+        >
+          {/* <View className="flex-row"> */}
+            <Text className="text-black text-base mx-2">Tap to Track</Text>
+            <Ionicons name="expand" size={22} color="black" />
+          {/* </View> */}
         </TouchableOpacity>
       </View>
     </View>
@@ -263,11 +266,6 @@ const styles = StyleSheet.create({
     height: "100%",
   },
 });
-
-
-
-
-
 
 // const [schedulesTem, setSchedulesTem] = useState([
 //   {
@@ -348,7 +346,7 @@ const styles = StyleSheet.create({
 //       // Add more bus schedules here
 //     ],
 //   },
-]);
+// ]);
 {
   /* Watching Count Label */
 }

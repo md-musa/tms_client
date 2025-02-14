@@ -1,18 +1,15 @@
-import { View, Text } from 'react-native'
-import React from 'react'
-import { Stack, Tabs } from 'expo-router'
+import { Stack } from "expo-router";
 
 const RootLayout = () => {
   return (
-    <Tabs screenOptions={{headerShown:false}}>
-      <Tabs.Screen name="index" />
-      <Tabs.Screen name="schedules" />
-      <Tabs.Screen name="broadcast" />
-      <Tabs.Screen name="notification" />
-      <Tabs.Screen name="setting" />
-    </Tabs>
-  )
+    <Stack screenOptions={{ headerShown: false }}>
+      {/* Tabs Navigator */}
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 
-}
+      {/* Stack Pages (outside tabs) */}
+      <Stack.Screen name="watchBusLocation" />
+    </Stack>
+  );
+};
 
-export default RootLayout
+export default RootLayout;
