@@ -12,13 +12,13 @@ import { generateMarkers, selectRoutePolyline } from "@/utils/mappingHelper";
 import busImage from "@/assets/images/bug_front.png";
 import busMarker from "@/assets/images/bus-marker.png";
 
-const busData = Array.from({ length: 10 }, (_, index) => ({
-  id: index + 1,
-  busName: `Bus ${index + 1}`,
-  direction: index % 2 === 0 ? "To Campus" : "From Campus",
-  status: index % 2 === 0 ? "Ongoing" : "Scheduled",
-  time: index % 2 === 0 ? "10:30 AM" : "11:00 AM",
-}));
+// const busData = Array.from({ length: 10 }, (_, index) => ({
+//   id: index + 1,
+//   busName: `Bus ${index + 1}`,
+//   direction: index % 2 === 0 ? "To Campus" : "From Campus",
+//   status: index % 2 === 0 ? "Ongoing" : "Scheduled",
+//   time: index % 2 === 0 ? "10:30 AM" : "11:00 AM",
+// }));
 
 const WatchBusLocation = () => {
   const bottomSheetRef = useRef(null);
@@ -35,16 +35,19 @@ const WatchBusLocation = () => {
   };
 
   const { userData } = useAuth();
-  const [busLocations, setBusLocations] = useState({});
+  const [activeBuses, setActiveBuses] = useState({});
   const [currentlyConnectedUserCount, setCurrentlyConnectedUserCount] = useState(0);
-
+  const [recenterMap, setRecenterMap] = useState(true);
+  const [zoomLevel, setZoomLevel] = useState(12);
+  const [userZoomed, setUserZoomed] = useState(false);
   useEffect(() => {
     socket.on("bus-location-update", (data) => {
+      setRecenterMap(false);
       if (!data) {
         console.log("⚠ error", data);
         return;
       }
-      setBusLocations((prevBuses) => ({
+      setActiveBuses((prevBuses) => ({
         ...prevBuses,
         [data.bus.id]: data,
       }));
@@ -58,48 +61,57 @@ const WatchBusLocation = () => {
     };
 
     if (userData) joinRoute(userData?.route._id);
+    if (!userZoomed) {
+      setZoomLevel(12);
+    }
 
     return () => {
       socket.off("bus-location-update");
     };
-  }, []);
+  }, [userZoomed]);
 
-  const busesMarkers = generateMarkers(busLocations);
+  const busesMarkers = generateMarkers(activeBuses);
 
   const renderBusItem = ({ item }) => {
     if (!item) return <Text>Not available</Text>;
+    const { bus, trip } = item;
 
     return (
       <View className="px-2 py-1" style={styles.busItemContainer}>
         <Image source={busImage} style={{ height: 30, width: 30, marginRight: 10 }} />
         <View style={{ flex: 1 }}>
-          <Text className="text-md font-bold">{item.busName}</Text>
+          <Text className="text-md font-bold">{bus.name + "-" + bus.serialNumber}</Text>
           <View className="flex-row">
-            <Text className="text-sm">{item.direction} | </Text>
-            <Text className="text-sm bg-primary-1000 px-2 text-white rounded-full">Faculty Bus</Text>
+            <Text className="text-sm capitalize">{trip.direction} | </Text>
+            <Text className="text-sm bg-primary-800 px-2 text-white rounded-full capitalize">{bus.type} bus</Text>
           </View>
           <View
             className={`flex-row rounded-full px-2 my-1 ${
-              item.status == "Ongoing" ? "bg-yellow-100 text-yellow-600" : "bg-secondary-100 text-secondary-600"
+              trip.status == "ongoing" ? "bg-yellow-100 text-yellow-600" : "bg-secondary-100 text-secondary-600"
             }`}
           >
-            <Text className="text-sm">{item.status}</Text>
+            <Text className="text-sm">{trip.status}</Text>
 
             {item.status === "Scheduled" && (
               <Text className="text-sm">
-                {" | "}Time: {item.time}
+                {" | "}Departure: {trip.departureTime || "TBD"}
               </Text>
             )}
           </View>
         </View>
         <View style={{ marginLeft: 4 }}>
-          <TouchableOpacity className="bg-green-500 p-2 rounded-full flex-row items-center">
+          <TouchableOpacity className="bg-green-500 px-2 py-1 rounded-full flex-row items-center">
             <Icon name="location-on" size={16} color="white" style={{ marginRight: 4 }} />
             <Text className="text-white">Track Bus</Text>
           </TouchableOpacity>
         </View>
       </View>
     );
+  };
+  const handleZoomChange = (newZoom) => {
+    console.log(newZoom);
+    setZoomLevel(newZoom);
+    setUserZoomed(true);
   };
 
   return (
@@ -108,8 +120,9 @@ const WatchBusLocation = () => {
       <View className="relative flex-1">
         <MapLibreGL.MapView style={styles.map}>
           <MapLibreGL.Camera
-            zoomLevel={11}
-            centerCoordinate={[90.34984171243167, 23.859482749844815]} // Center on route start
+            zoomLevel={zoomLevel}
+            onDidChange={() => handleZoomChange(zoomLevel)}
+            centerCoordinate={recenterMap ? [90.34984171243167, 23.859482749844815] : undefined}
           />
 
           <MapLibreGL.RasterSource
@@ -128,7 +141,7 @@ const WatchBusLocation = () => {
             <MapLibreGL.LineLayer
               id="routeLayer"
               style={{
-                lineColor: "blue",
+                lineColor: "black",
                 lineWidth: 2,
                 lineCap: "round",
                 lineJoin: "round",
@@ -177,9 +190,9 @@ const WatchBusLocation = () => {
 
           {/* Scrollable List of Buses */}
           <FlatList
-            data={busData}
+            data={Object.values(activeBuses)}
             renderItem={renderBusItem}
-            keyExtractor={(item) => item.id.toString()}
+            keyExtractor={(item) => item.bus.id.toString()}
             className="w-full"
           />
 
