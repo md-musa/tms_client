@@ -35,7 +35,13 @@
         }
       ],
       "expo-secure-store",
-      "@maplibre/maplibre-react-native"
+      "@maplibre/maplibre-react-native",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow TMS to use your location."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

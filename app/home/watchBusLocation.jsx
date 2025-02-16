@@ -1,45 +1,32 @@
-import React, { useCallback, useRef, useState, useEffect } from "react";
-import { View, Text, StatusBar, StyleSheet, TouchableOpacity, FlatList, Alert, Image } from "react-native";
-import { GestureHandlerRootView, ScrollView } from "react-native-gesture-handler";
-import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import React, { useRef, useState, useEffect } from "react";
+import { View, Text, StatusBar, StyleSheet, Alert } from "react-native";
 import * as MapLibreGL from "@maplibre/maplibre-react-native";
 import { Ionicons } from "@expo/vector-icons";
-import Icon from "react-native-vector-icons/MaterialIcons"; // Correct import
 import { socket } from "@/app/home/(tabs)";
 import { useAuth } from "@/contexts/AuthContext";
 import campusArea from "@/assets/routes/campus.json";
 import { generateMarkers, selectRoutePolyline } from "@/utils/mappingHelper";
-import busImage from "@/assets/images/bug_front.png";
 import busMarker from "@/assets/images/bus-marker.png";
-
-// const busData = Array.from({ length: 10 }, (_, index) => ({
-//   id: index + 1,
-//   busName: `Bus ${index + 1}`,
-//   direction: index % 2 === 0 ? "To Campus" : "From Campus",
-//   status: index % 2 === 0 ? "Ongoing" : "Scheduled",
-//   time: index % 2 === 0 ? "10:30 AM" : "11:00 AM",
-// }));
+import BottomSheetComponent from "../../components/UI/BottomSheetComponent";
+import useLocation from "@/hook/useLocation";
 
 const WatchBusLocation = () => {
   const bottomSheetRef = useRef(null);
-  const handleSheetChanges = useCallback((index) => {
-    console.log("handleSheetChanges", index);
-  }, []);
-
-  const openBottomSheet = () => {
-    bottomSheetRef.current?.expand();
-  };
-
-  const closeBottomSheet = () => {
-    bottomSheetRef.current?.close();
-  };
-
   const { userData } = useAuth();
+  const { location, errorMsg } = useLocation();
+  if (location)
+    console.log(`
+          📍 Latitude: ${location.latitude}{"\n"}
+          📍 Longitude: ${location.longitude}{"\n"}
+          🚀 Speed: ${location.speed ? location.speed.toFixed(2) : 0} m/s{"\n"}
+          🏔 Altitude: ${location.altitude ? location.altitude.toFixed(2) : 0} m{"\n"}
+          🧭 Heading: ${location.heading ? location.heading.toFixed(2) : 0}°
+        `);
   const [activeBuses, setActiveBuses] = useState({});
   const [currentlyConnectedUserCount, setCurrentlyConnectedUserCount] = useState(0);
   const [recenterMap, setRecenterMap] = useState(true);
-  const [zoomLevel, setZoomLevel] = useState(12);
-  const [userZoomed, setUserZoomed] = useState(false);
+  const [zoom, setZoom] = useState(12); // Initial zoom level
+  console.log(zoom);
   useEffect(() => {
     socket.on("bus-location-update", (data) => {
       setRecenterMap(false);
@@ -61,67 +48,26 @@ const WatchBusLocation = () => {
     };
 
     if (userData) joinRoute(userData?.route._id);
-    if (!userZoomed) {
-      setZoomLevel(12);
-    }
 
     return () => {
       socket.off("bus-location-update");
     };
-  }, [userZoomed]);
+  }, []);
 
   const busesMarkers = generateMarkers(activeBuses);
 
-  const renderBusItem = ({ item }) => {
-    if (!item) return <Text>Not available</Text>;
-    const { bus, trip } = item;
-
-    return (
-      <View className="px-2 py-1" style={styles.busItemContainer}>
-        <Image source={busImage} style={{ height: 30, width: 30, marginRight: 10 }} />
-        <View style={{ flex: 1 }}>
-          <Text className="text-md font-bold">{bus.name + "-" + bus.serialNumber}</Text>
-          <View className="flex-row">
-            <Text className="text-sm capitalize">{trip.direction} | </Text>
-            <Text className="text-sm bg-primary-800 px-2 text-white rounded-full capitalize">{bus.type} bus</Text>
-          </View>
-          <View
-            className={`flex-row rounded-full px-2 my-1 ${
-              trip.status == "ongoing" ? "bg-yellow-100 text-yellow-600" : "bg-secondary-100 text-secondary-600"
-            }`}
-          >
-            <Text className="text-sm">{trip.status}</Text>
-
-            {item.status === "Scheduled" && (
-              <Text className="text-sm">
-                {" | "}Departure: {trip.departureTime || "TBD"}
-              </Text>
-            )}
-          </View>
-        </View>
-        <View style={{ marginLeft: 4 }}>
-          <TouchableOpacity className="bg-green-500 px-2 py-1 rounded-full flex-row items-center">
-            <Icon name="location-on" size={16} color="white" style={{ marginRight: 4 }} />
-            <Text className="text-white">Track Bus</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  };
-  const handleZoomChange = (newZoom) => {
-    console.log(newZoom);
-    setZoomLevel(newZoom);
-    setUserZoomed(true);
-  };
-
   return (
-    <GestureHandlerRootView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" hidden={true} />
       <View className="relative flex-1">
-        <MapLibreGL.MapView style={styles.map}>
+        <MapLibreGL.MapView
+          style={styles.map}
+          onRegionDidChange={(event) => {
+            setZoom(event.properties.zoom);
+          }}
+        >
           <MapLibreGL.Camera
-            zoomLevel={zoomLevel}
-            onDidChange={() => handleZoomChange(zoomLevel)}
+            zoomLevel={zoom}
             centerCoordinate={recenterMap ? [90.34984171243167, 23.859482749844815] : undefined}
           />
 
@@ -171,6 +117,44 @@ const WatchBusLocation = () => {
               }}
             />
           </MapLibreGL.ShapeSource>
+
+          {/* User Location: Blue Dot with Shadow */}
+          <MapLibreGL.ShapeSource
+            id="userLocation"
+            shape={{
+              type: "FeatureCollection",
+              features: [
+                {
+                  type: "Feature",
+                  geometry: {
+                    type: "Point",
+                    coordinates: [location.longitude, location.latitude],
+                  },
+                },
+              ],
+            }}
+          >
+            {/* Shadow (Larger Circle) */}
+            <MapLibreGL.CircleLayer
+              id="userShadow"
+              style={{
+                circleRadius: 30,
+                circleColor: "rgba(0, 0, 255, 0.3)", // Light blue transparent shadow
+                circleBlur: 0,
+              }}
+            />
+
+            {/* Main Blue Dot */}
+            <MapLibreGL.CircleLayer
+              id="userDot"
+              style={{
+                circleRadius: 5,
+                circleColor: "blue",
+                circleStrokeColor: "white",
+                circleStrokeWidth: 2,
+              }}
+            />
+          </MapLibreGL.ShapeSource>
         </MapLibreGL.MapView>
 
         <View className="absolute top-5 right-3 bg-black/50 px-3 rounded-lg">
@@ -184,24 +168,12 @@ const WatchBusLocation = () => {
         </View>
       </View>
 
-      <BottomSheet ref={bottomSheetRef} snapPoints={["30%", "50%", "60%", "75%", "90%"]} onChange={handleSheetChanges}>
-        <BottomSheetView className="px-5">
-          <Text className="text-xl font-bold text-center my-2">Available buses</Text>
-
-          {/* Scrollable List of Buses */}
-          <FlatList
-            data={Object.values(activeBuses)}
-            renderItem={renderBusItem}
-            keyExtractor={(item) => item.bus.id.toString()}
-            className="w-full"
-          />
-
-          <TouchableOpacity onPress={closeBottomSheet} className="bg-red-500 p-4 rounded-lg mt-4">
-            <Text className="text-white">Close</Text>
-          </TouchableOpacity>
-        </BottomSheetView>
-      </BottomSheet>
-    </GestureHandlerRootView>
+      <BottomSheetComponent
+        bottomSheetRef={bottomSheetRef}
+        activeBuses={activeBuses}
+        closeBottomSheet={() => bottomSheetRef.current?.close()}
+      />
+    </View>
   );
 };
 
