@@ -6,7 +6,7 @@ import { socket } from "@/app/home/(tabs)";
 import { useAuth } from "@/contexts/AuthContext";
 import campusArea from "@/assets/routes/campus.json";
 import { generateMarkers, selectRoutePolyline } from "@/utils/mappingHelper";
-import busMarker from "@/assets/images/bus-marker.png";
+import busMarker from "@/assets/images/navigatorArrow3.png";
 import BottomSheetComponent from "../../components/UI/BottomSheetComponent";
 import useLocation from "@/hook/useLocation";
 
@@ -55,6 +55,9 @@ const WatchBusLocation = () => {
   }, []);
 
   const busesMarkers = generateMarkers(activeBuses);
+  // send speed from user device
+
+  if (!location) return <Text>Loading...</Text>;
 
   return (
     <View style={styles.container}>
@@ -68,7 +71,7 @@ const WatchBusLocation = () => {
         >
           <MapLibreGL.Camera
             zoomLevel={zoom}
-            centerCoordinate={recenterMap ? [90.34984171243167, 23.859482749844815] : undefined}
+            centerCoordinate={recenterMap ? [location.longitude, location.latitude] : undefined}
           />
 
           <MapLibreGL.RasterSource
@@ -79,10 +82,12 @@ const WatchBusLocation = () => {
             <MapLibreGL.RasterLayer id="osmLayer" sourceID="osm" />
           </MapLibreGL.RasterSource>
 
+          {/* Campus marker */}
           <MapLibreGL.ShapeSource id="polygonSource" shape={campusArea}>
             <MapLibreGL.FillLayer id="polygonLayer" style={{ fillColor: "rgba(255, 0, 100, 0.4)" }} />
           </MapLibreGL.ShapeSource>
 
+          {/* Route polyline */}
           <MapLibreGL.ShapeSource id="routeSource" shape={selectRoutePolyline(userData?.route || "")}>
             <MapLibreGL.LineLayer
               id="routeLayer"
@@ -96,6 +101,7 @@ const WatchBusLocation = () => {
           </MapLibreGL.ShapeSource>
           <MapLibreGL.Images images={{ marker: busMarker }} />
 
+          {/*--------------- Buses markers-------------------- */}
           <MapLibreGL.ShapeSource
             id="busMarkers"
             shape={{
@@ -103,58 +109,80 @@ const WatchBusLocation = () => {
               features: busesMarkers,
             }}
           >
+            <MapLibreGL.CircleLayer
+              id="userShadow3"
+              style={{
+                circleRadius: 17,
+                circleColor: "rgba(229, 129, 52, 0.4)", //"rgba(229, 129, 52, 0.3)", //"rgba(127, 185, 255, 0.4)",
+                circleBlur: 0,
+              }}
+            />
+            <MapLibreGL.CircleLayer
+              id="userShadow2"
+              style={{
+                circleRadius: 10,
+                circleColor: "black",
+                circleBlur: 0,
+              }}
+            />
             <MapLibreGL.SymbolLayer
               id="busMarkerLayer"
               style={{
                 iconImage: "marker",
-                iconSize: 0.05,
-                textField: ["get", "title"],
+                iconSize: 0.025,
+                iconAnchor: "center",
+                iconRotate: ["get", "heading"], // Ensure you set heading in your data
+                textField: ["concat", ["get", "title"], "\n", ["get", "direction"]], // Multi-line text
                 textSize: 14,
-                textColor: "#000000",
-                textHaloColor: "#FFFFFF",
-                textHaloWidth: 1,
-                textOffset: [0, 1.5],
+                textColor: "#ffffff",
+                textHaloColor: "#000000",
+                textHaloWidth: 2,
+                textOffset: [0, 2.5], // Moves text above the marker
+                // textBackgroundColor: "blue", // Background color
+                // textBackgroundPadding: 4, // Adds padding
               }}
             />
           </MapLibreGL.ShapeSource>
 
-          {/* User Location: Blue Dot with Shadow */}
-          <MapLibreGL.ShapeSource
-            id="userLocation"
-            shape={{
-              type: "FeatureCollection",
-              features: [
-                {
-                  type: "Feature",
-                  geometry: {
-                    type: "Point",
-                    coordinates: [location.longitude, location.latitude],
+          {/*-----------User Location: Blue Dot with Shadow-----------------*/}
+          {location && (
+            <MapLibreGL.ShapeSource
+              id="userLocation"
+              shape={{
+                type: "FeatureCollection",
+                features: [
+                  {
+                    type: "Feature",
+                    geometry: {
+                      type: "Point",
+                      coordinates: [location.longitude, location.latitude],
+                    },
                   },
-                },
-              ],
-            }}
-          >
-            {/* Shadow (Larger Circle) */}
-            <MapLibreGL.CircleLayer
-              id="userShadow"
-              style={{
-                circleRadius: 30,
-                circleColor: "rgba(0, 0, 255, 0.3)", // Light blue transparent shadow
-                circleBlur: 0,
+                ],
               }}
-            />
+            >
+              {/* Shadow (Larger Circle) */}
+              <MapLibreGL.CircleLayer
+                id="userShadow"
+                style={{
+                  circleRadius: 20,
+                  circleColor: "rgba(0, 50, 255, 0.3)",
+                  circleBlur: 0,
+                }}
+              />
 
-            {/* Main Blue Dot */}
-            <MapLibreGL.CircleLayer
-              id="userDot"
-              style={{
-                circleRadius: 5,
-                circleColor: "blue",
-                circleStrokeColor: "white",
-                circleStrokeWidth: 2,
-              }}
-            />
-          </MapLibreGL.ShapeSource>
+              {/* Main Blue Dot */}
+              <MapLibreGL.CircleLayer
+                id="userDot"
+                style={{
+                  circleRadius: 5,
+                  circleColor: "blue",
+                  circleStrokeColor: "white",
+                  circleStrokeWidth: 2,
+                }}
+              />
+            </MapLibreGL.ShapeSource>
+          )}
         </MapLibreGL.MapView>
 
         <View className="absolute top-5 right-3 bg-black/50 px-3 rounded-lg">
@@ -203,3 +231,18 @@ const styles = StyleSheet.create({
 });
 
 export default WatchBusLocation;
+
+// <MapLibreGL.SymbolLayer
+//               id="busMarkerLayer"
+//               style={{
+//                 iconImage: "marker",
+//                 iconSize: 0.05,
+//                 textField: ["get", "title"],
+//                 textSize: 14,
+//                 textColor: "#000000",
+//                 textHaloColor: "#FFFFFF",
+//                 textHaloWidth: 1,
+//                 textOffset: [0, 1.5],
+//               }}
+//             />
+//           </MapLibreGL.ShapeSource> */}

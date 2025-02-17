@@ -17,6 +17,7 @@ export function generateMarkers(busLocations) {
     properties: {
       icon: "marker",
       title: `${data.bus.name[0]}-${data.bus.serialNumber}`,
+      direction: data.trip.direction
     },
   }));
 }
