@@ -14,7 +14,7 @@ import busMarker from "@/assets/images/bus-marker.png";
 import io from "socket.io-client";
 import { selectRoutePolyline, generateMarkers } from "@/utils/mappingHelper";
 
-export const socket = io("http://192.168.1.11:5000");
+export const socket = io("http://192.168.1.9:5000");
 
 export default function Index() {
   const { userData, updateRoute } = useAuth();

@@ -3,9 +3,9 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import busMarker from "@/assets/images/bus-marker.png";
 import busImage from "@/assets/images/bug_front.png"
 
-export default availableBusListCard = ({ item }) => {
+export default AvailableBusListCard = ({ item, centerMapAndHighLightBus }) => {
   if (!item) return <Text>Not available</Text>;
-  const { bus, trip } = item;
+  const { bus, trip, location} = item;
 
   return (
     <View className="px-2 py-1" style={styles.busItemContainer}>
@@ -31,7 +31,7 @@ export default availableBusListCard = ({ item }) => {
         </View>
       </View>
       <View style={{ marginLeft: 4 }}>
-        <TouchableOpacity className="bg-green-500 px-2 py-1 rounded-full flex-row items-center">
+        <TouchableOpacity onPress={()=> centerMapAndHighLightBus(location.latitude, location.longitude)} className="bg-green-500 px-2 py-1 rounded-full flex-row items-center">
           <Icon name="location-on" size={16} color="white" style={{ marginRight: 4 }} />
           <Text className="text-white">Track Bus</Text>
         </TouchableOpacity>
