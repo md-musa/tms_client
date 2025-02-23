@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import { Ionicons } from "@expo/vector-icons";
+import useLocation from "@/hook/useLocation";
 
 export default function LiveLocationSharing() {
+  const {location} = useLocation();
   const [watchingCount, setWatchingCount] = useState(25); // Example count
   const [routeName, setRouteName] = useState("Campus to Uttara");
   const [busName, setBusName] = useState("Bus 1");
