@@ -1,229 +1,173 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, Modal, TextInput, Button, StyleSheet } from "react-native";
-import MapView, { Marker } from "react-native-maps";
+import React, { useEffect, useState} from "react";
+import { View, Text, TextInput, Button, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import useLocation from "@/hook/useLocation";
-import socket from "@/config/socket"; // Import the socket instance
+import apiClient from "@/config/axiosConfig";
+import { useBroadcast } from "@/contexts/BroadcastContext";
+import { useNavigation } from "@react-navigation/native"; 
 
-export default function Index() {
-  const { location } = useLocation();
-  const [watchingCount, setWatchingCount] = useState(0);
-  const [routeName, setRouteName] = useState("Campus to Uttara");
-  const [busName, setBusName] = useState("Bus 1");
-  const [isModalVisible, setIsModalVisible] = useState(true); // Show modal initially
-  const [busType, setBusType] = useState(""); // "student", "faculty", or "bus"
-  const [direction, setDirection] = useState(""); // "to_campus" or "from_campus"
-
-  // Emit location updates whenever location changes
+const Index = () => {
+  const { setBroadcastData } = useBroadcast();
+  const navigation = useNavigation();
+  const [busType, setBusType] = useState("");
+  const [selectedBus, setSelectedBus] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [availableBuses, setAvailableBuses] = useState([]);
   useEffect(() => {
-    if (!isModalVisible && busType && direction && location) {
-      const { latitude, longitude } = location;
-
-      // Emit the bus location update
-      socket.emit("broadcast-bus-location", {
-        routeId: "your-route-id", // Replace with actual route ID
-        busId: "your-bus-id", // Replace with actual bus ID
-        hostId: "your-host-id", // Replace with actual host ID
-        busType,
-        latitude,
-        longitude,
-        heading: 0, // Replace with actual heading if available
-        direction,
+    apiClient
+      .get("/buses")
+      .then((response) => {
+        console.log("Buses=", JSON.stringify(response.data, null, 2));
+        setAvailableBuses(response.data.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching buses", error);
       });
+  }, []);
 
-      console.log("📍 Broadcasted bus location:", { latitude, longitude, busType, direction });
-    }
-  }, [location, isModalVisible, busType, direction]);
+  // Filter buses based on search query
+  // const filteredBuses = busList.filter((bus) => bus.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
-  // Handle modal submission
+  // Handle start sharing
   const handleStartSharing = () => {
-    if (!busType || !direction) {
-      alert("Please select bus type and direction.");
+    if (!selectedBus || !busType) {
+      alert("Please select a bus and bus type.");
       return;
     }
-    setIsModalVisible(false); // Close the modal
+    console.log("Selected Bus:", selectedBus);
+    console.log("Bus Type:", busType);
+    setBroadcastData({ busId: selectedBus, busType });
+    navigation.navigate("liveLocationSharing");
   };
+  if (availableBuses.length === 0) return <Text>Loading...</Text>;
 
   return (
-    <View className="flex-1 bg-gray-100 p-4">
-      {/* Google Map Section */}
-      <View className="relative h-2/3 rounded-lg overflow-hidden shadow-lg">
-        <MapLibreGL.MapView style={styles.map} onRegionDidChange={(event) => setZoom(event.properties.zoom)}>
-          <MapLibreGL.Camera
-            zoomLevel={zoom}
-            centerCoordinate={recenterMap ? [location.longitude, location.latitude] : undefined}
-          />
+    <View style={styles.container}>
+      <Text style={styles.title}>Start Location Sharing</Text>
 
-          <MapLibreGL.RasterSource
-            id="osm"
-            tileUrlTemplates={["https://tile.openstreetmap.org/{z}/{x}/{y}.png"]}
-            tileSize={256}
-          >
-            <MapLibreGL.RasterLayer id="osmLayer" sourceID="osm" />
-          </MapLibreGL.RasterSource>
-
-          <MapLibreGL.ShapeSource id="polygonSource" shape={campusArea}>
-            <MapLibreGL.FillLayer id="polygonLayer" style={{ fillColor: "rgba(255, 0, 100, 0.4)" }} />
-          </MapLibreGL.ShapeSource>
-
-          <MapLibreGL.ShapeSource id="routeSource" shape={selectRoutePolyline(userData?.route || "")}>
-            <MapLibreGL.LineLayer
-              id="routeLayer"
-              style={{ lineColor: "black", lineWidth: 2, lineCap: "round", lineJoin: "round" }}
-            />
-          </MapLibreGL.ShapeSource>
-
-          <MapLibreGL.Images images={{ marker: busMarker }} />
-
-          {/* <MapLibreGL.Animated.ShapeSource
-            id="busMarkers"
-            shape={{ type: "FeatureCollection", features: generateMarkers(activeBuses) }}
-          >
-            <MapLibreGL.CircleLayer id="userShadow3" style={styles.busShadow1} />
-            <MapLibreGL.CircleLayer id="userShadow2" style={styles.busShadow2} />
-            <MapLibreGL.Animated.SymbolLayer id="busMarkerLayer" style={styles.busMarker} />
-          </MapLibreGL.Animated.ShapeSource> */}
-
-          <MapLibreGL.ShapeSource
-            id="userLocation"
-            shape={{
-              type: "FeatureCollection",
-              features: [
-                {
-                  type: "Feature",
-                  geometry: {
-                    type: "Point",
-                    coordinates: [location.longitude, location.latitude],
-                  },
-                },
-              ],
-            }}
-          >
-            <MapLibreGL.CircleLayer id="userShadow" style={styles.userShadow} />
-            <MapLibreGL.CircleLayer id="userDot" style={styles.userDot} />
-          </MapLibreGL.ShapeSource>
-        </MapLibreGL.MapView>
-
-
-
-
-        {/* Watching Count Label */}
-        <View className="absolute top-3 left-3 bg-black/60 px-3 py-1 rounded-lg">
-          <Text className="text-white text-sm">Watching: {watchingCount}</Text>
-        </View>
-
-        {/* Route Name Label */}
-        <View className="absolute top-3 right-3 bg-blue-600 px-3 py-1 rounded-lg">
-          <Text className="text-white text-sm">{routeName}</Text>
-        </View>
-
-        {/* Fullscreen Icon */}
-        <TouchableOpacity className="absolute bottom-3 right-3 bg-white p-2 rounded-full shadow-lg">
-          <Ionicons name="expand" size={24} color="black" />
-        </TouchableOpacity>
+      {/* Bus Search and Select */}
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>Select Bus</Text>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search for a bus..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        <ScrollView style={styles.busList}>
+          {availableBuses.map((bus) => (
+            <TouchableOpacity
+              key={bus._id}
+              style={[styles.busItem, selectedBus === bus._id && styles.selectedBusItem]}
+              onPress={() => setSelectedBus(bus._id)}
+            >
+              <Text style={styles.busText}>{bus.name + "-" + bus.serialNumber}</Text>
+              {selectedBus === bus._id && <Ionicons name="checkmark" size={20} color="#4CAF50" />}
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </View>
 
-      {/* Route Details */}
-      <View className="bg-white p-4 mt-4 rounded-lg shadow-md">
-        <Text className="text-lg font-bold text-gray-800">Route: {routeName}</Text>
-        <Text className="text-md text-gray-600 mt-1">Bus: {busName}</Text>
+      {/* Bus Type Select */}
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>Bus Type</Text>
+        <View style={styles.selectContainer}>
+          <TouchableOpacity
+            style={[styles.selectOption, busType === "student" && styles.selectedOption]}
+            onPress={() => setBusType("student")}
+          >
+            <Text style={styles.selectText}>Student</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.selectOption, busType === "faculty" && styles.selectedOption]}
+            onPress={() => setBusType("faculty")}
+          >
+            <Text style={styles.selectText}>Faculty</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
-      {/* Stop Location Sharing Button */}
-      <TouchableOpacity className="bg-red-600 py-3 rounded-xl shadow-lg mt-6">
-        <Text className="text-white text-center font-semibold text-lg">Stop Location Sharing</Text>
-      </TouchableOpacity>
-
-      {/* Modal for Bus Type and Direction */}
-      <Modal visible={isModalVisible} transparent={true} animationType="slide">
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Start Location Sharing</Text>
-
-            <TextInput
-              style={styles.input}
-              placeholder="Bus Type (student, faculty, bus)"
-              value={busType}
-              onChangeText={setBusType}
-            />
-
-            <TextInput
-              style={styles.input}
-              placeholder="Direction (to_campus, from_campus)"
-              value={direction}
-              onChangeText={setDirection}
-            />
-
-            <Button title="Start Sharing" onPress={handleStartSharing} />
-          </View>
-        </View>
-      </Modal>
+      {/* Start Sharing Button */}
+      <Button title="Start Sharing" onPress={handleStartSharing} />
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  modalContent: {
-    width: "80%",
+  container: {
     padding: 20,
     backgroundColor: "white",
     borderRadius: 10,
+    width: "100%",
   },
-  modalTitle: {
-    fontSize: 18,
+  title: {
+    fontSize: 20,
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",
+    color: "#333",
   },
-  input: {
-    height: 40,
-    borderColor: "gray",
-    borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 10,
+  inputContainer: {
     marginBottom: 20,
   },
-  map: {
+  label: {
+    fontSize: 14,
+    fontWeight: "500",
+    marginBottom: 8,
+    color: "#555",
+  },
+  searchInput: {
+    height: 40,
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+  },
+  busList: {
+    maxHeight: 150,
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 8,
+  },
+  busItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  selectedBusItem: {
+    backgroundColor: "#f0f0f0",
+  },
+  busText: {
+    fontSize: 14,
+    color: "#333",
+  },
+  selectContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 8,
+  },
+  selectOption: {
     flex: 1,
+    padding: 10,
+    marginHorizontal: 4,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    alignItems: "center",
   },
-  busShadow1: {
-    circleRadius: 17,
-    circleColor: "rgba(229, 129, 52, 0.4)",
-    circleBlur: 0,
+  selectedOption: {
+    borderColor: "#4CAF50",
+    backgroundColor: "#E8F5E9",
   },
-  busShadow2: {
-    circleRadius: 10,
-    circleColor: "black",
-    circleBlur: 0,
-  },
-  busMarker: {
-    iconImage: "marker",
-    iconSize: 0.025,
-    iconAnchor: "center",
-    iconRotate: ["get", "heading"],
-    textField: ["get", "title"],
-    textSize: 11,
-    textColor: "rgba(229, 129, 52, 1)",
-    textAnchor: "bottom",
-    textOffset: [0, 2.5],
-    textHaloColor: "black",
-    textHaloWidth: 0.2,
-  },
-  userShadow: {
-    circleRadius: 20,
-    circleColor: "rgba(0, 50, 255, 0.3)",
-    circleBlur: 0,
-  },
-  userDot: {
-    circleRadius: 5,
-    circleColor: "blue",
-    circleStrokeColor: "white",
-    circleStrokeWidth: 2,
+  selectText: {
+    fontSize: 14,
+    color: "#333",
   },
 });
+
+export default Index;
