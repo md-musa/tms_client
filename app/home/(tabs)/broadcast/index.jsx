@@ -35,7 +35,7 @@ const Index = () => {
     }
     console.log("Selected Bus:", selectedBus);
     console.log("Bus Type:", busType);
-    setBroadcastData({ busId: selectedBus, busType });
+    setBroadcastData({ bus: selectedBus, busType });
     navigation.navigate("liveLocationSharing");
   };
   if (availableBuses.length === 0) return <Text>Loading...</Text>;
@@ -57,11 +57,11 @@ const Index = () => {
           {availableBuses.map((bus) => (
             <TouchableOpacity
               key={bus._id}
-              style={[styles.busItem, selectedBus === bus._id && styles.selectedBusItem]}
-              onPress={() => setSelectedBus(bus._id)}
+              style={[styles.busItem, selectedBus._id === bus._id && styles.selectedBusItem]}
+              onPress={() => setSelectedBus(bus)}
             >
               <Text style={styles.busText}>{bus.name + "-" + bus.serialNumber}</Text>
-              {selectedBus === bus._id && <Ionicons name="checkmark" size={20} color="#4CAF50" />}
+              {selectedBus._id === bus._id && <Ionicons name="checkmark" size={20} color="#4CAF50" />}
             </TouchableOpacity>
           ))}
         </ScrollView>

@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
 
 // Replace with your server URL
-const SOCKET_SERVER_URL = "http://192.168.1.7:5000";
+const SOCKET_SERVER_URL = "http://192.168.1.2:5000";
 
 // Initialize the socket connection
 const socket = io(SOCKET_SERVER_URL, {

@@ -16,9 +16,10 @@ export function generateMarkers(busLocations) {
     },
     properties: {
       icon: "marker",
-      title: `${data.bus.name}-${data.bus.serialNumber}`,
-      direction: data.trip.direction // add heading for rotation,   // send speed from user device
-
+      title: `${data.bus.name}-${data.bus.serialNumber}\n${data.trip.direction}\n${data.speed}`,
+      direction: data.trip.direction,
+      heading: data.heading,
+      speed: data.speed,
     },
   }));
 }

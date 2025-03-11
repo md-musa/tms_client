@@ -34,6 +34,7 @@ const MapComponent = ({ location, zoom, recenterMap, userData, activeBuses, setZ
 
       <MapLibreGL.Images images={{ marker: busMarker }} />
 
+      {/* Show buses location */}
       <MapLibreGL.Animated.ShapeSource
         id="busMarkers"
         shape={{ type: "FeatureCollection", features: generateMarkers(activeBuses) }}
@@ -43,6 +44,7 @@ const MapComponent = ({ location, zoom, recenterMap, userData, activeBuses, setZ
         <MapLibreGL.Animated.SymbolLayer id="busMarkerLayer" style={styles.busMarker} />
       </MapLibreGL.Animated.ShapeSource>
 
+      {/* Show user location */}
       <MapLibreGL.ShapeSource
         id="userLocation"
         shape={{
@@ -88,7 +90,7 @@ const styles = StyleSheet.create({
     textSize: 11,
     textColor: "rgba(229, 129, 52, 1)",
     textAnchor: "bottom",
-    textOffset: [0, 2.5],
+    textOffset: [0, 4.5],
     textHaloColor: "black",
     textHaloWidth: 0.2,
   },

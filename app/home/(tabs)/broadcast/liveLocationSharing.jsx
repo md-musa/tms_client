@@ -8,7 +8,7 @@ import socket from "@/config/socket";
 import * as MapLibreGL from "@maplibre/maplibre-react-native";
 import campusArea from "@/assets/routes/campus.json";
 import { generateMarkers, selectRoutePolyline } from "@/utils/mappingHelper";
-import busMarker from "@/assets/images/navigatorArrow3.png";
+import busMarker from "@/assets/images/navigatorArrow.png";
 
 const Loading = () => <Text>Loading...</Text>;
 
@@ -59,14 +59,14 @@ export default function LiveLocationSharing() {
         ...location,
         routeId: userData.route._id,
         hostId: "", // Add hostId if available
-        busId: broadcastData?.busId,
+        busId: broadcastData?.bus._id,
         busType: broadcastData?.busType,
       });
 
       console.log("📡 Broadcasted location data:", {
         ...location,
         routeId: userData.route._id,
-        busId: broadcastData?.busId,
+        busId: broadcastData?.bus,
         busType: broadcastData?.busType,
       });
     }
@@ -142,9 +142,9 @@ export default function LiveLocationSharing() {
                 },
                 properties: {
                   icon: "marker",
-                  title: broadcastData.busId, // `${data.bus.name}-${data.bus.serialNumber}`,
-                  speed: `${Math.ceil(location.speed)} m/s`, // add speed for animation,
-                  heading: location.heading, // add heading for rotation,   // send speed from user device
+                  title: `${broadcastData.bus.name}-${broadcastData.bus.serialNumber}`,
+                  speed: `${Math.ceil(location.speed)} m/s`,
+                  heading: location.heading,
                 },
               },
             ],
@@ -175,15 +175,32 @@ export default function LiveLocationSharing() {
 
       {/* Route Details */}
       <View className="px-4 mb-4">
-        <View className="bg-white p-4 mt-4 rounded-lg shadow-md">
-        <Text className="text-lg font-bold text-gray-800">Route: {routeName}</Text>
-        <Text className="text-md text-gray-600 mt-1">Bus: {busName}</Text>
-      </View>
+        <View className="bg-white p-4 mt-4 rounded-lg shadow-md flex-row items-center">
+        <View className="flex-[0.1] items-end px-2">
+          <Image
+            source={{ uri: "https://media.lordicon.com/icons/wired/outline/1657-alert.gif" }}
+            style={{ width: 40, height: 40 }}
+            resizeMode="contain"
+          />
+        </View>
+          {/* Left Section (70%) */}
+          <View className="flex-[0.6] px-2">
+            <Text className="text-lg font-bold text-gray-800">Route: {routeName}</Text>
+            <Text className="text-md text-gray-600 mt-1">
+              Bus: {broadcastData.bus.name}-{broadcastData.bus.serialNumber}
+            </Text>
+          </View>
 
-      {/* Stop Location Sharing Button */}
-      <TouchableOpacity className="bg-red-600 py-3 rounded-xl shadow-lg mt-6" onPress={handleStopSharing}>
-        <Text className="text-white text-center font-semibold text-lg">Stop Location Sharing</Text>
-      </TouchableOpacity>
+          {/* Right Section (30%) */}
+          <View className="flex-[0.2] items-end">
+            <Text className="text-2xl text-gray-600 text-right">{Math.ceil(location.speed)} m/s</Text>
+          </View>
+        </View>
+
+        {/* Stop Location Sharing Button */}
+        <TouchableOpacity className="bg-red-600 py-3 rounded-xl shadow-lg mt-6" onPress={handleStopSharing}>
+          <Text className="text-white text-center font-semibold text-lg">Stop Location Sharing</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -195,7 +212,7 @@ const styles = StyleSheet.create({
   },
   busShadow1: {
     circleRadius: 17,
-    circleColor: "rgba(229, 129, 52, 0.4)",
+    circleColor: "rgba(16, 187, 103, 0.4)",
     circleBlur: 0,
   },
   busShadow2: {
@@ -207,11 +224,10 @@ const styles = StyleSheet.create({
     iconImage: "marker",
     iconSize: 0.025,
     iconAnchor: "center",
-    iconRotate: ["+", ["get", "heading"], 45], // Add -90 degrees to the heading
+    iconRotate: ["get", "heading"],
     textField: ["get", "title"],
-    textField: ["get", "speed"],
     textSize: 11,
-    textColor: "rgba(229, 129, 52, 1)",
+    textColor: "rgba(16, 187, 103, 1)",
     textAnchor: "bottom",
     textOffset: [0, 2.5],
     textHaloColor: "black",
