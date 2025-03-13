@@ -12,7 +12,7 @@ import busMarker from "@/assets/images/navigatorArrow.png";
 
 const Loading = () => <Text>Loading...</Text>;
 
-export default function LiveLocationSharing() {
+function LiveLocationSharing() {
   const { location } = useLocation();
   const { userData } = useAuth();
   const { broadcastData } = useBroadcast();
@@ -176,13 +176,13 @@ export default function LiveLocationSharing() {
       {/* Route Details */}
       <View className="px-4 mb-4">
         <View className="bg-white p-4 mt-4 rounded-lg shadow-md flex-row items-center">
-        <View className="flex-[0.1] items-end px-2">
-          <Image
-            source={{ uri: "https://media.lordicon.com/icons/wired/outline/1657-alert.gif" }}
-            style={{ width: 40, height: 40 }}
-            resizeMode="contain"
-          />
-        </View>
+          <View className="flex-[0.1] items-end px-2">
+            <Image
+              source={{ uri: "https://media.lordicon.com/icons/wired/outline/1657-alert.gif" }}
+              style={{ width: 40, height: 40 }}
+              resizeMode="contain"
+            />
+          </View>
           {/* Left Section (70%) */}
           <View className="flex-[0.6] px-2">
             <Text className="text-lg font-bold text-gray-800">Route: {routeName}</Text>
@@ -271,3 +271,5 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
 });
+
+export default LiveLocationSharing;

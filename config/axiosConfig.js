@@ -1,9 +1,14 @@
 import axios from "axios";
+import Constants from "expo-constants";
 
+
+const LOCAL_API_URL = "http://192.168.1.16:5000/api/v1";
+const SERVER_URL = `${Constants.expoConfig.extra.API_URL}/api/v1`;
+console.log("SERVER_URL", LOCAL_API_URL);
 
 const apiClient = axios.create({
-  baseURL: "http://192.168.1.2:5000/api/v1",
-  timeout: 10000, 
+  baseURL: SERVER_URL,
+  timeout: 10000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -13,7 +18,7 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     // Example: Add Authorization token if needed
-    const token = "your_auth_token"; 
+    const token = "your_auth_token";
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

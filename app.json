@@ -47,6 +47,7 @@
       "typedRoutes": true
     },
     "extra": {
+      "API_URL": "https://tms-dcro.onrender.com",
       "router": {
         "origin": false
       },
@@ -58,5 +59,6 @@
       }
     },
     "owner": "md_musa"
+    
   }
 }
