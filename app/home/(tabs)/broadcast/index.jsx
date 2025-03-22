@@ -1,12 +1,14 @@
-import React, { useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, TextInput, Button, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import apiClient from "@/config/axiosConfig";
 import { useBroadcast } from "@/contexts/BroadcastContext";
-import { useNavigation } from "@react-navigation/native"; 
+import { useNavigation } from "@react-navigation/native";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
   const { setBroadcastData } = useBroadcast();
+  const { userData } = useAuth();
   const navigation = useNavigation();
   const [busType, setBusType] = useState("");
   const [selectedBus, setSelectedBus] = useState("");
@@ -24,19 +26,31 @@ const Index = () => {
       });
   }, []);
 
-  // Filter buses based on search query
-  // const filteredBuses = busList.filter((bus) => bus.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  //console.log(JSON.stringify(availableBuses, null, 1));
 
-  // Handle start sharing
-  const handleStartSharing = () => {
+  const handleStartSharing = async () => {
     if (!selectedBus || !busType) {
       alert("Please select a bus and bus type.");
       return;
     }
+    console.log(JSON.stringify(userData, null, 2));
+    const res = await apiClient.post("/trips", {
+      routeId: userData.route._id,
+      hostId: userData.userId,
+      busName: selectedBus.name,
+      busType: busType,
+    });
+    console.log("Response:", JSON.stringify(res.data, null, 2));
+    if (res.data.success) {
+      console.log("Trip created successfully");
+      setBroadcastData({ bus: selectedBus, busType, tripId: res.data.data._id });
+      navigation.navigate("liveLocationSharing");
+    } else {
+      console.log("Error creating trip");
+    }
+
     console.log("Selected Bus:", selectedBus);
     console.log("Bus Type:", busType);
-    setBroadcastData({ bus: selectedBus, busType });
-    navigation.navigate("liveLocationSharing");
   };
   if (availableBuses.length === 0) return <Text>Loading...</Text>;
 
@@ -60,7 +74,9 @@ const Index = () => {
               style={[styles.busItem, selectedBus._id === bus._id && styles.selectedBusItem]}
               onPress={() => setSelectedBus(bus)}
             >
-              <Text style={styles.busText}>{bus.name + "-" + bus.serialNumber}</Text>
+              <Text className="" style={styles.busText}>
+                {bus.name}
+              </Text>
               {selectedBus._id === bus._id && <Ionicons name="checkmark" size={20} color="#4CAF50" />}
             </TouchableOpacity>
           ))}
@@ -78,10 +94,10 @@ const Index = () => {
             <Text style={styles.selectText}>Student</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.selectOption, busType === "faculty" && styles.selectedOption]}
-            onPress={() => setBusType("faculty")}
+            style={[styles.selectOption, busType === "employee" && styles.selectedOption]}
+            onPress={() => setBusType("employee")}
           >
-            <Text style={styles.selectText}>Faculty</Text>
+            <Text style={styles.selectText}>Employee</Text>
           </TouchableOpacity>
         </View>
       </View>

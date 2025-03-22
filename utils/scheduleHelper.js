@@ -51,7 +51,7 @@ export function processSchedules(schedules) {
 
     // Assign "Next" status only to the first future schedule
     if (!status && index === array.findIndex((s) => moment(s.time, "HH:mm").isAfter(now))) {
-      return { ...schedule,  formattedTime, status: "Next" };
+      return { ...schedule, formattedTime, status: "Next" };
     }
 
     return { ...schedule, formattedTime, status: status || null };

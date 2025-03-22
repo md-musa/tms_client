@@ -83,7 +83,7 @@ const Register = () => {
                 <Picker selectedValue={role} onValueChange={(itemValue) => setRole(itemValue)} className="">
                   <Picker.Item label="Select a role" value="" />
                   <Picker.Item label="Student" value="student" />
-                  <Picker.Item label="Faculty" value="faculty" />
+                  <Picker.Item label="Employee" value="employee" />
                   <Picker.Item label="Admin" value="admin" />
                 </Picker>
               </View>

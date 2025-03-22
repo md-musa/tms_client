@@ -56,18 +56,13 @@ function LiveLocationSharing() {
   useEffect(() => {
     if (isSharing && location && userData?.route?._id && broadcastData) {
       socket.emit("broadcast-bus-location", {
+        tripId: broadcastData.tripId,
         ...location,
-        routeId: userData.route._id,
-        hostId: "", // Add hostId if available
-        busId: broadcastData?.bus._id,
-        busType: broadcastData?.busType,
       });
 
       console.log("📡 Broadcasted location data:", {
         ...location,
-        routeId: userData.route._id,
-        busId: broadcastData?.bus,
-        busType: broadcastData?.busType,
+        tripId: broadcastData.tripId,
       });
     }
   }, [location, isSharing, userData?.route?._id, broadcastData]);
@@ -142,7 +137,7 @@ function LiveLocationSharing() {
                 },
                 properties: {
                   icon: "marker",
-                  title: `${broadcastData.bus.name}-${broadcastData.bus.serialNumber}`,
+                  title: `${broadcastData.bus.name}`,
                   speed: `${Math.ceil(location.speed)} m/s`,
                   heading: location.heading,
                 },
@@ -186,9 +181,7 @@ function LiveLocationSharing() {
           {/* Left Section (70%) */}
           <View className="flex-[0.6] px-2">
             <Text className="text-lg font-bold text-gray-800">Route: {routeName}</Text>
-            <Text className="text-md text-gray-600 mt-1">
-              Bus: {broadcastData.bus.name}-{broadcastData.bus.serialNumber}
-            </Text>
+            <Text className="text-md text-gray-600 mt-1">Bus: {broadcastData.bus.name}</Text>
           </View>
 
           {/* Right Section (30%) */}

@@ -2,12 +2,12 @@ import axios from "axios";
 import Constants from "expo-constants";
 
 
-const LOCAL_API_URL = "http://192.168.1.16:5000/api/v1";
+const LOCAL_API_URL = "http://192.168.1.6:4000/api/v1";
 const SERVER_URL = `${Constants.expoConfig.extra.API_URL}/api/v1`;
 console.log("SERVER_URL", LOCAL_API_URL);
 
 const apiClient = axios.create({
-  baseURL: SERVER_URL,
+  baseURL: LOCAL_API_URL,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",

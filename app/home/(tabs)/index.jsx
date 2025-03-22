@@ -17,10 +17,11 @@ export default function Index() {
 
   useEffect(() => {
     socket.on("bus-location-update", (data) => {
+      console.log("🚌", JSON.stringify(data, null, 2));
       if (!data) return console.log("⚠ error", data);
       setRecenterMap(false);
-      setActiveBuses((prevBuses) => ({ ...prevBuses, [data.bus.id]: data }));
-      setCurrentlyConnectedUserCount(data.currentlyConnectedUserCount || 0);
+      setActiveBuses((prevBuses) => ({ ...prevBuses, [data.trip.busName]: data }));
+      setCurrentlyConnectedUserCount(data.currUserCnt || 0);
     });
 
     if (userData?.route?._id) {

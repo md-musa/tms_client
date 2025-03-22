@@ -24,7 +24,7 @@ const useLocation = () => {
             latitude: newLocation.coords.latitude,
             longitude: newLocation.coords.longitude,
             speed: newLocation.coords.speed, // Speed in meters/second
-            altitude: newLocation.coords.altitude, // Altitude in meters
+            //altitude: newLocation.coords.altitude, // Altitude in meters
             heading: newLocation.coords.heading, // Direction in degrees
           });
         }

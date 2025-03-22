@@ -44,12 +44,12 @@ export const AuthProvider = ({ children }) => {
       console.log("Registration Success:", result);
 
       const { accessToken, user } = result.data.data;
-      const { name, email, role, routeId } = user;
+      const { _id, name, email, role, routeId } = user;
 
-      await SecureStorage.setItem("auth-1", JSON.stringify({ accessToken, name, email, role }));
+      await SecureStorage.setItem("auth-1", JSON.stringify({ userId: _id, accessToken, name, email, role }));
       await SecureStorage.setItem("route", JSON.stringify({ route: routeId }));
 
-      setUserData({ accessToken, name, email, role, route: routeId });
+      setUserData({ userId: _id, accessToken, name, email, role, route: routeId });
       router.push("/home");
     } catch (err) {
       console.error("Registration Error:", err);
@@ -62,12 +62,12 @@ export const AuthProvider = ({ children }) => {
       console.log("Login Success:", result);
 
       const { accessToken, user } = result.data.data;
-      const { name, email, role, routeId } = user;
+      const { _id, name, email, role, routeId } = user;
 
-      await SecureStorage.setItem("auth-1", JSON.stringify({ accessToken, name, email, role }));
+      await SecureStorage.setItem("auth-1", JSON.stringify({ userId: _id, accessToken, name, email, role }));
       await SecureStorage.setItem("route", JSON.stringify({ route: routeId }));
 
-      setUserData({ accessToken, name, email, role, route: routeId });
+      setUserData({ userId: _id, accessToken, name, email, role, route: routeId });
       router.push("/home");
     } catch (err) {
       console.error("Login Error:", err);

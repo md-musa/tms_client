@@ -13,8 +13,6 @@ const BusSchedule = () => {
   const [selectedFilter, setSelectedFilter] = useState("Student");
   const [schedules, setSchedules] = useState(null);
 
-  // if (!route) return <Text>Loading...</Text>;
-
   useEffect(() => {
     const fetchSchedules = async () => {
       try {
@@ -34,16 +32,16 @@ const BusSchedule = () => {
     fetchSchedules();
   }, [userData]);
 
-  // if (!schedules) return <Text>Loading schedules...</Text>;
+  if (!schedules) return <Text>Loading schedules...</Text>;
+  //console.log("📆 Schedules:", JSON.stringify(schedules, null, 2));
 
-  let toCampusStudent, fromCampusStudent, toCampusFaculty, fromCampusFaculty;
+  let toCampusStudent, fromCampusStudent, toCampusEmployee, fromCampusEmployee;
   if (schedules) {
-    toCampusStudent = processSchedules(schedules.to_campus.student);
-    fromCampusStudent = processSchedules(schedules.from_campus.student);
-    toCampusFaculty = processSchedules(schedules.to_campus.faculty);
-    fromCampusFaculty = processSchedules(schedules.from_campus.faculty);
+    toCampusStudent = processSchedules(schedules?.to_campus.student);
+    fromCampusStudent = processSchedules(schedules?.from_campus.student);
+    toCampusEmployee = processSchedules(schedules?.to_campus.employee);
+    fromCampusEmployee = processSchedules(schedules?.from_campus.employee);
   }
-
   return (
     <View className="flex-1 bg-white p-4">
       {/* View Stoppage Button */}
@@ -79,7 +77,7 @@ const BusSchedule = () => {
         </View>
 
         <View className="bg-white p-4 my-4 rounded-xl">
-          {/* Student, Faculty, All Filter */}
+          {/* Student, Employee, All Filter */}
           <View className="flex-row justify-around rounded-md">
             {/* <TouchableOpacity
           className={`px-6 py-2 rounded-lg ${selectedFilter === "All" ? "bg-indigo-500" : "bg-gray-300"}`}
@@ -94,10 +92,10 @@ const BusSchedule = () => {
               <Text className="text-white font-semibold">Student</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              className={`px-6 py-2 rounded-lg ${selectedFilter === "Faculty" ? "bg-indigo-500" : "bg-gray-300"}`}
-              onPress={() => setSelectedFilter("Faculty")}
+              className={`px-6 py-2 rounded-lg ${selectedFilter === "Employee" ? "bg-indigo-500" : "bg-gray-300"}`}
+              onPress={() => setSelectedFilter("Employee")}
             >
-              <Text className="text-white font-semibold">Faculty</Text>
+              <Text className="text-white font-semibold">Employee</Text>
             </TouchableOpacity>
           </View>
 
@@ -110,15 +108,15 @@ const BusSchedule = () => {
                     {`${userData?.route?.endLocation} to ${userData?.route?.startLocation}`}
                   </Text>
                   {toCampusStudent?.map((schedule) => (
-                    <ScheduleCard schedule={schedule} />
+                    <ScheduleCard key={schedule._id} schedule={schedule} />
                   ))}
                 </View>
                 <View className="">
                   <Text className="font-semibold px-4 py-2 bg-primary-200 text-primary-1000 rounded-md w-full my-2">
-                  {`${userData?.route?.startLocation} to ${userData?.route?.endLocation}`}
+                    {`${userData?.route?.startLocation} to ${userData?.route?.endLocation}`}
                   </Text>
                   {fromCampusStudent?.map((schedule) => (
-                    <ScheduleCard schedule={schedule} />
+                    <ScheduleCard key={schedule._id} schedule={schedule} />
                   ))}
                 </View>
               </>
@@ -126,18 +124,18 @@ const BusSchedule = () => {
               <>
                 <View className="">
                   <Text className="font-semibold px-4 py-2 bg-primary-200 text-primary-1000 rounded-md w-full my-2">
-                  {`${userData?.route?.endLocation} to ${userData?.route?.startLocation}`}
+                    {`${userData?.route?.endLocation} to ${userData?.route?.startLocation}`}
                   </Text>
-                  {toCampusFaculty?.map((schedule) => (
-                    <ScheduleCard schedule={schedule} />
+                  {toCampusEmployee?.map((schedule) => (
+                    <ScheduleCard key={schedule._id} schedule={schedule} />
                   ))}
                 </View>
                 <View className="">
                   <Text className="font-semibold px-4 py-2 bg-primary-200 text-primary-1000 rounded-md w-full my-2">
-                  {`${userData?.route?.startLocation} to ${userData?.route?.endLocation}`}
+                    {`${userData?.route?.startLocation} to ${userData?.route?.endLocation}`}
                   </Text>
-                  {fromCampusFaculty?.map((schedule) => (
-                    <ScheduleCard schedule={schedule} />
+                  {fromCampusEmployee?.map((schedule) => (
+                    <ScheduleCard key={schedule._id} schedule={schedule} />
                   ))}
                 </View>
               </>

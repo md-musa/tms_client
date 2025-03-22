@@ -16,7 +16,7 @@ export function generateMarkers(busLocations) {
     },
     properties: {
       icon: "marker",
-      title: `${data.bus.name}-${data.bus.serialNumber}\n${data.trip.direction}\n${data.speed}`,
+      title: `${data.bus.name}\n${data.trip.direction}\n${data.speed}`,
       direction: data.trip.direction,
       heading: data.heading,
       speed: data.speed,
