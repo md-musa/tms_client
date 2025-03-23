@@ -1,22 +1,22 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import busMarker from "@/assets/images/bus-marker.png";
-import busImage from "@/assets/images/bug_front.png"
+import busImage from "@/assets/images/bug_front.png";
 
 export default AvailableBusListCard = ({ item, centerMapAndHighLightBus }) => {
   if (!item) return <Text>Not available</Text>;
-  const { bus, trip, location} = item;
+  const { trip, latitude, longitude, speed, heading } = item;
 
   return (
     <View className="px-2 py-1" style={styles.busItemContainer}>
       <Image source={busImage} style={{ height: 30, width: 30, marginRight: 10 }} />
       <View style={{ flex: 1 }}>
-        <Text className="text-md font-bold">{bus.name + ` ${item.speed}m/s`}</Text>
+        <Text className="text-md font-bold">{trip.busName + ` ${parseInt(speed)} m/s`}</Text>
         <View className="flex-row">
           <Text className="text-sm capitalize">{trip.direction} | </Text>
-          <Text className="text-sm bg-primary-800 px-2 text-white rounded-full capitalize">{bus.type} bus</Text>
+          <Text className="text-sm bg-primary-800 px-2 text-white rounded-full capitalize">{trip.busType} Bus</Text>
         </View>
-        <View
+        {/* <View
           className={`flex-row rounded-full px-2 my-1 ${
             trip.status == "ongoing" ? "bg-yellow-100 text-yellow-600" : "bg-secondary-100 text-secondary-600"
           }`}
@@ -28,10 +28,13 @@ export default AvailableBusListCard = ({ item, centerMapAndHighLightBus }) => {
               {" | "}Departure: {trip.departureTime || "TBD"}
             </Text>
           )}
-        </View>
+        </View> */}
       </View>
       <View style={{ marginLeft: 4 }}>
-        <TouchableOpacity onPress={()=> centerMapAndHighLightBus(location.latitude, location.longitude)} className="bg-green-500 px-2 py-1 rounded-full flex-row items-center">
+        <TouchableOpacity
+          onPress={() => centerMapAndHighLightBus(latitude, longitude)}
+          className="bg-green-500 px-2 py-1 rounded-full flex-row items-center"
+        >
           <Icon name="location-on" size={16} color="white" style={{ marginRight: 4 }} />
           <Text className="text-white">Track Bus</Text>
         </TouchableOpacity>

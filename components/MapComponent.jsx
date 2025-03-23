@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import * as MapLibreGL from "@maplibre/maplibre-react-native";
 import campusArea from "@/assets/routes/campus.json";
 import { generateMarkers, selectRoutePolyline } from "@/utils/mappingHelper";
@@ -7,7 +7,11 @@ import busMarker from "@/assets/images/navigatorArrow3.png";
 
 const MapComponent = ({ location, zoom, recenterMap, userData, activeBuses, setZoom }) => {
   return (
-    <MapLibreGL.MapView style={styles.map} onRegionDidChange={(event) => setZoom(event.properties.zoom)}>
+    <MapLibreGL.MapView
+      attributionEnabled={true}
+      style={styles.map}
+      onRegionDidChange={(event) => setZoom(event.properties.zoom)}
+    >
       <MapLibreGL.Camera
         zoomLevel={zoom}
         centerCoordinate={recenterMap ? [location.longitude, location.latitude] : undefined}
@@ -63,6 +67,10 @@ const MapComponent = ({ location, zoom, recenterMap, userData, activeBuses, setZ
         <MapLibreGL.CircleLayer id="userShadow" style={styles.userShadow} />
         <MapLibreGL.CircleLayer id="userDot" style={styles.userDot} />
       </MapLibreGL.ShapeSource>
+
+      {/* <View style={styles.attributionContainer}>
+        <Text style={styles.attributionText}>© OpenStreetMap contributors</Text>
+      </View> */}
     </MapLibreGL.MapView>
   );
 };
@@ -105,6 +113,7 @@ const styles = StyleSheet.create({
     circleStrokeColor: "white",
     circleStrokeWidth: 2,
   },
+
 });
 
 export default MapComponent;

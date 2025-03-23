@@ -7,16 +7,16 @@ export function selectRoutePolyline(currentRoute) {
   else return { type: "FeatureCollection", features: [] };
 }
 
-export function generateMarkers(busLocations) {
-  return Object.entries(busLocations).map(([busId, data]) => ({
+export function generateMarkers(activeBuses) {
+  return Object.entries(activeBuses).map(([busName, data]) => ({
     type: "Feature",
     geometry: {
       type: "Point",
-      coordinates: [data.location.longitude, data.location.latitude],
+      coordinates: [data.longitude, data.latitude],
     },
     properties: {
       icon: "marker",
-      title: `${data.bus.name}\n${data.trip.direction}\n${data.speed}`,
+      title: `${data.trip.busName}\n${data.trip.direction}\n${data.trip.busType +" bus"}\n${parseInt(data.speed)} m/s`,
       direction: data.trip.direction,
       heading: data.heading,
       speed: data.speed,

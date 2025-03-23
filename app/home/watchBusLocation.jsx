@@ -7,8 +7,6 @@ import StatusOverlayComponent from "@/components/UI/StatusOverlayComponent";
 import BottomSheetComponent from "@/components/UI/BottomSheetComponent";
 import socket from "@/config/socket";
 
-
-
 const WatchBusLocation = () => {
   const bottomSheetRef = useRef(null);
   const { userData } = useAuth();
@@ -21,10 +19,11 @@ const WatchBusLocation = () => {
 
   useEffect(() => {
     socket.on("bus-location-update", (data) => {
+      console.log("🚌", JSON.stringify(data, null, 2));
       if (!data) return console.log("⚠ error", data);
 
       setRecenterMap(false);
-      setActiveBuses((prevBuses) => ({ ...prevBuses, [data.bus.id]: data }));
+      setActiveBuses((prevBuses) => ({ ...prevBuses, [data.trip.busName]: data }));
       setCurrentlyConnectedUserCount(data.currentlyConnectedUserCount || 0);
     });
 

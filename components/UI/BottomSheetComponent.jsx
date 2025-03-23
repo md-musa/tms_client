@@ -15,7 +15,7 @@ const BottomSheetComponent = ({ bottomSheetRef, activeBuses, closeBottomSheet, c
           renderItem={({ item }) => (
             <AvailableBusListCard item={item} centerMapAndHighLightBus={centerMapAndHighLightBus} />
           )}
-          keyExtractor={(item) => item.bus.id.toString()}
+          keyExtractor={(item) => item.trip.busName}
           className="w-full"
         />
 
