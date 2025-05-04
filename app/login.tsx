@@ -1,67 +1,109 @@
-import { View, Text, TextInput, Button, TouchableOpacity } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from "react-native";
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { loginUser } from "@/services/authService";
+import { MaterialCommunityIcons, MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/contexts/AuthContext";
+import Toast from "react-native-toast-message";
+import { Link } from "expo-router";
 
 const Login = () => {
-  const { userData, login } = useAuth();
+  const { login, authLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  console.log("User data ", userData);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
-    console.log({ email, password });
-    login({ email, password });
+    if (!email || !password) {
+      Toast.show({
+        type: "error",
+        text1: "Validation Error",
+        text2: "Please fill all fields",
+      });
+      return;
+    }
+
+    await login({ email, password });
   };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 justify-end px-10 mb-10">
+        {/* Title and Caption (original version) */}
         <View className="">
-          <Text className="text-title-2 font-semibold text-center mb-10">
-            Please Login for service of university buses
+          <Text className="text-title-2 font-semibold text-center mb-4">Track Your Campus Buses</Text>
+          <Text className="text-body text-center text-gray-500 mb-10">
+            Login to view real-time bus locations and schedules
           </Text>
-          <Text className="text-body text-center text-gray-500 mb-10">Enter you registered email and password</Text>
         </View>
 
+        {/* Form aligned to bottom */}
         <View className="">
-          <View className="my-3">
-            <View className="flex-row items-center gap-2 ">
-              <MaterialCommunityIcons name="email-outline" size={24} color="black" />
-              <Text className="text-lg font-semibold mb-2">Email Address</Text>
+          {/* Email Input */}
+          <View className="my-5">
+            <View className="flex-row items-center gap-2">
+              <MaterialCommunityIcons name="email-outline" size={20} color="black" />
+              <Text className="text-lg  mb-2">University Mail</Text>
             </View>
             <TextInput
               value={email}
               onChangeText={setEmail}
-              placeholder="Enter your email"
+              placeholder="Enter your university mail"
               keyboardType="email-address"
-              className="border border-gray-300 rounded-xl px-5 py-3"
+              autoCapitalize="none"
+              className="border border-gray-300 rounded-xl px-4 py-4"
             />
           </View>
+
+          {/* Password Input with toggle */}
           <View className="my-3">
-            <View className="flex-row items-center gap-2 ">
-              <MaterialIcons name="password" size={24} color="black" />
-              <Text className="text-lg font-semibold mb-2">Password</Text>
+            <View className="flex-row items-center gap-2">
+              <MaterialIcons name="password" size={20} color="black" />
+              <Text className="text-lg  mb-2">Password</Text>
             </View>
-            <TextInput
-              value={password}
-              onChangeText={setPassword}
-              placeholder="Enter your password"
-              secureTextEntry
-              className="border border-gray-300 rounded-xl px-5 py-3"
-            />
+            <View className="flex-row items-center border border-gray-300 rounded-xl px-4 py-4">
+              <TextInput
+                value={password}
+                onChangeText={setPassword}
+                placeholder="Enter your password"
+                secureTextEntry={!showPassword}
+                className="flex-1"
+              />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                <Ionicons name={showPassword ? "eye-off" : "eye"} size={20} color="gray" />
+              </TouchableOpacity>
+            </View>
           </View>
-          <View className="">
-            <TouchableOpacity onPress={handleLogin} className="w-full bg-tertiary-900 p-3 rounded-xl my-2">
-              <Text className="text-body text-center text-white"> Login </Text>
+
+          {/* Login Button */}
+          <View className="mt-6">
+            <TouchableOpacity
+              onPress={handleLogin}
+              disabled={authLoading}
+              className="w-full bg-tertiary-900 p-3 rounded-xl flex-row justify-center"
+            >
+              {authLoading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text className="text-body text-center text-white">Login</Text>
+              )}
             </TouchableOpacity>
+          </View>
+
+          {/* Forgot Password and Sign Up Links */}
+          <View className="mt-4 items-center">
+            <TouchableOpacity className="mb-4">
+              <Text className="text-blue-600">Forgot Password?</Text>
+            </TouchableOpacity>
+            <View className="flex-row">
+              <Text className="text-gray-600">Don't have an account? </Text>
+              <Link href="/register" className="text-blue-600">
+                Sign Up
+              </Link>
+            </View>
           </View>
         </View>
       </View>
+      <Toast />
     </SafeAreaView>
   );
 };
