@@ -7,8 +7,10 @@ import StatusOverlayComponent from "@/components/UI/StatusOverlayComponent";
 import BottomSheetComponent from "@/components/UI/BottomSheetComponent";
 import socket from "@/config/socket";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
 const WatchBusLocation = () => {
+  const router = useRouter();
   const bottomSheetRef = useRef(null);
   const { userData } = useAuth();
   const { location } = useLocation();
@@ -36,7 +38,7 @@ const WatchBusLocation = () => {
 
       setRecenterMap(false);
       setActiveBuses((prevBuses) => ({ ...prevBuses, [data.trip.busName]: data }));
-      setCurrentlyConnectedUserCount(data.currentlyConnectedUserCount || 0);
+      setCurrentlyConnectedUserCount(data.currUserCnt || 0);
     });
 
     if (userData) {
@@ -54,7 +56,6 @@ const WatchBusLocation = () => {
     };
   }, [userData]);
 
-
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" hidden={true} />
@@ -70,11 +71,17 @@ const WatchBusLocation = () => {
         <StatusOverlayComponent currentlyConnectedUserCount={currentlyConnectedUserCount} activeBuses={activeBuses} />
 
         <TouchableOpacity
-          className="absolute bottom-60 right-5 bg-white border border-gray-300 rounded-full shadow flex-row p-4 items-center justify-center"
+          className="absolute bottom-60 right-5 bg-white border border-gray-300 rounded-full shadow flex-row p-3 items-center justify-center"
           onPress={centerToUserLocation}
         >
-          {/* <Text className="text-black text-base mx-2"></Text> */}
-          <Ionicons name="locate" size={28} color="blue" />
+          <Ionicons name="locate" size={28} color="black" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          className="absolute top-10 left-5 bg-white border border-gray-300 rounded-full shadow flex-row p-2 items-center justify-center"
+          onPress={() => router.push("/home")}
+        >
+          <Ionicons name="arrow-back" size={25} color="black" />
         </TouchableOpacity>
       </View>
 

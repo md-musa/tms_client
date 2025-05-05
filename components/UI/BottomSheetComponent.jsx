@@ -5,7 +5,7 @@ import AvailableBusListCard from "./AvailableBusListCard";
 
 const BottomSheetComponent = ({ bottomSheetRef, activeBuses, closeBottomSheet, centerMapAndHighLightBus }) => {
   return (
-    <BottomSheet ref={bottomSheetRef} snapPoints={["30%", "50%", "60%", "75%", "90%"]}>
+    <BottomSheet ref={bottomSheetRef} snapPoints={["30%", "50%", "60%", "75%", "90%"]} initialsnapIndex={0}>
       <BottomSheetView className="px-5">
         <Text className="text-xl font-bold text-center my-2">Available buses</Text>
 

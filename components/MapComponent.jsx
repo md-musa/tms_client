@@ -37,7 +37,7 @@ const MapComponent = ({ location, zoom, recenterMap, userData, activeBuses, setZ
 
       <MapLibreGL.Images images={{ marker: busMarker }} />
 
-      {/* Show buses location */}
+      {/* -----Show buses location-------*/}
       <MapLibreGL.Animated.ShapeSource
         id="busMarkers"
         shape={{ type: "FeatureCollection", features: generateMarkers(activeBuses) }}
@@ -69,9 +69,7 @@ const MapComponent = ({ location, zoom, recenterMap, userData, activeBuses, setZ
         </MapLibreGL.ShapeSource>
       )}
 
-      {/* <View style={styles.attributionContainer}>
-        <Text style={styles.attributionText}>© OpenStreetMap contributors</Text>
-      </View> */}
+      
     </MapLibreGL.MapView>
   );
 };
@@ -97,11 +95,11 @@ const styles = StyleSheet.create({
     iconRotate: ["get", "heading"],
     textField: ["get", "title"],
     textSize: 11,
-    textColor: "rgba(229, 129, 52, 1)",
+    textColor: "black",
     textAnchor: "bottom",
-    textOffset: [0, 4.5],
+    textOffset: [0, 6],
     textHaloColor: "black",
-    textHaloWidth: 0.2,
+    textHaloWidth: 0.1,
   },
   userShadow: {
     circleRadius: 20,
@@ -113,6 +111,19 @@ const styles = StyleSheet.create({
     circleColor: "blue",
     circleStrokeColor: "white",
     circleStrokeWidth: 2,
+  },
+  calloutContainer: {
+    backgroundColor: "white",
+    padding: 6,
+    borderRadius: 6,
+    borderColor: "#333",
+    borderWidth: 1,
+    zIndex: 999, // Add this
+  },
+  pointMarker: {
+    iconImage: "customMarker",
+    iconSize: 0.5,
+    iconAllowOverlap: true,
   },
 });
 

@@ -16,10 +16,16 @@ export function generateMarkers(activeBuses) {
     },
     properties: {
       icon: "marker",
-      title: `${data.trip.busName}\n${data.trip.direction}\n${data.trip.busType +" bus"}\n${parseInt(data.speed)} m/s`,
+      title: `${cpfl(data.trip.busName)}\n Going to ${data.trip.direction.split("_").pop()}\n${
+        cpfl(data.trip.busType) + " bus"
+      }\n${(data.speed * 3.6).toFixed(2)} km/h`,
       direction: data.trip.direction,
       heading: data.heading,
       speed: data.speed,
     },
   }));
+
+  function cpfl(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
 }

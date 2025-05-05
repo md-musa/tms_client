@@ -11,9 +11,13 @@ export default AvailableBusListCard = ({ item, centerMapAndHighLightBus }) => {
     <View className="px-2 py-1" style={styles.busItemContainer}>
       <Image source={busImage} style={{ height: 30, width: 30, marginRight: 10 }} />
       <View style={{ flex: 1 }}>
-        <Text className="text-md font-bold">{trip.busName + ` ${parseInt(speed)} m/s`}</Text>
+        <Text className="text-md font-bold">
+          {trip.busName.charAt(0).toUpperCase() + trip.busName.slice(1) + ` | ${(speed * 3.6).toFixed(2)} km/h`}
+        </Text>
         <View className="flex-row">
-          <Text className="text-sm capitalize">{trip.direction} | </Text>
+          <Text className="text-sm capitalize">
+            Going to {trip.direction.split("_").pop()} | 
+          </Text>
           <Text className="text-sm bg-primary-800 px-2 text-white rounded-full capitalize">{trip.busType} Bus</Text>
         </View>
         {/* <View

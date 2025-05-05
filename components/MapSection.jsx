@@ -19,9 +19,9 @@ const MapSection = ({ location, zoom, recenterMap, userData, activeBuses, setZoo
   };
 
   return (
-    <View className="flex-1 relative mt-4 mx-2 rounded-md overflow-hidden">
+    <View className="flex-1 relative mt-4 mx-2 rounded-md overflow-hidden border border-gray-300">
       <MapComponent
-        location={location}
+        location={location} 
         zoom={zoom}
         recenterMap={recenterMap}
         userData={userData}
