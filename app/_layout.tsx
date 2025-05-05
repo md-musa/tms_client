@@ -4,9 +4,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BroadcastProvider } from "@/contexts/BroadcastContext";
 import Toast from "react-native-toast-message"
-import { SplashScreen, Slot } from 'expo-router';
 
-SplashScreen.preventAutoHideAsync();
+
 
 
 export default function RootLayout() {

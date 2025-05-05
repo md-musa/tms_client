@@ -12,10 +12,9 @@ const MapComponent = ({ location, zoom, recenterMap, userData, activeBuses, setZ
       style={styles.map}
       onRegionDidChange={(event) => setZoom(event.properties.zoom)}
     >
-      <MapLibreGL.Camera
-        zoomLevel={zoom}
-        centerCoordinate={recenterMap ? [location.longitude, location.latitude] : undefined}
-      />
+      {recenterMap && location && (
+        <MapLibreGL.Camera zoomLevel={zoom} centerCoordinate={[location.longitude, location.latitude]} />
+      )}
 
       <MapLibreGL.RasterSource
         id="osm"
@@ -49,24 +48,26 @@ const MapComponent = ({ location, zoom, recenterMap, userData, activeBuses, setZ
       </MapLibreGL.Animated.ShapeSource>
 
       {/* Show user location */}
-      <MapLibreGL.ShapeSource
-        id="userLocation"
-        shape={{
-          type: "FeatureCollection",
-          features: [
-            {
-              type: "Feature",
-              geometry: {
-                type: "Point",
-                coordinates: [location.longitude, location.latitude],
+      {location && (
+        <MapLibreGL.ShapeSource
+          id="userLocation"
+          shape={{
+            type: "FeatureCollection",
+            features: [
+              {
+                type: "Feature",
+                geometry: {
+                  type: "Point",
+                  coordinates: [location.longitude, location.latitude],
+                },
               },
-            },
-          ],
-        }}
-      >
-        <MapLibreGL.CircleLayer id="userShadow" style={styles.userShadow} />
-        <MapLibreGL.CircleLayer id="userDot" style={styles.userDot} />
-      </MapLibreGL.ShapeSource>
+            ],
+          }}
+        >
+          <MapLibreGL.CircleLayer id="userShadow" style={styles.userShadow} />
+          <MapLibreGL.CircleLayer id="userDot" style={styles.userDot} />
+        </MapLibreGL.ShapeSource>
+      )}
 
       {/* <View style={styles.attributionContainer}>
         <Text style={styles.attributionText}>© OpenStreetMap contributors</Text>
@@ -113,7 +114,6 @@ const styles = StyleSheet.create({
     circleStrokeColor: "white",
     circleStrokeWidth: 2,
   },
-
 });
 
 export default MapComponent;

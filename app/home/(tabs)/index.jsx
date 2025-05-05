@@ -18,6 +18,7 @@ export default function Index() {
   useEffect(() => {
     socket.on("bus-location-update", (data) => {
       console.log("🚌", JSON.stringify(data, null, 2));
+
       if (!data) return console.log("⚠ error", data);
       setRecenterMap(false);
       setActiveBuses((prevBuses) => ({ ...prevBuses, [data.trip.busName]: data }));
@@ -33,7 +34,7 @@ export default function Index() {
     };
   }, [userData]);
 
-  if (!location) return <Text>Loading...</Text>;
+  //if (!location) return <Text>Loading...</Text>;
 
   return (
     <View className="bg-[#e9e9e9] flex-1">
