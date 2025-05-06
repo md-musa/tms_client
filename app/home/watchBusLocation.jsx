@@ -79,7 +79,7 @@ const WatchBusLocation = () => {
 
         <TouchableOpacity
           className="absolute top-10 left-5 bg-white border border-gray-300 rounded-full shadow flex-row p-2 items-center justify-center"
-          onPress={() => router.push("/home")}
+          onPress={() => router.back()}
         >
           <Ionicons name="arrow-back" size={25} color="black" />
         </TouchableOpacity>

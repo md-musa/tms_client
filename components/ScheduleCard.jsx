@@ -3,22 +3,35 @@ import React from "react";
 
 const ScheduleCard = (props) => {
   const { _id, status, formattedTime, userType, note } = props.schedule;
+  console.log("🚀 ~ file: ScheduleCard.jsx:5 ~ ScheduleCard ~ props:", JSON.stringify(props.schedule, 0, 2));
   return (
     <View
       key={_id}
-      className={`p-3 my-1 rounded-lg border ${
-        status == "Ongoing" ? "bg-indigo-100 border-indigo-500" : "border-gray-300"
+      className={`rounded-lg py-2 my-1 border flex-row ${
+        status == "Ongoing" ? "bg-indigo-50 border-indigo-400" : "border-gray-300 shadow-sm bg-white"
       }`}
     >
-      <View className="flex-row justify-between">
-        <Text className={`text-lg ${status =="Ongoing" ? "font-bold text-indigo-600" : "text-gray-700"}`}>
-          {formattedTime} 
+      <View className="w-[65%] px-2">
+        <Text className={`text-lg ${status == "Ongoing" ? "font-semibold text-indigo-500" : "text-gray-700"}`}>
+          {formattedTime}
         </Text>
 
-        <Text className={`text-sm ${status ? "font-bold text-indigo-600" : "text-gray-700"}`}>{note}</Text>
+        {note && (
+          <Text className={`text-sm ${status == "Ongoing" ? "font-semibold text-indigo-500" : "text-gray-700"}`}>
+            N.B: {note}
+          </Text>
+        )}
+      </View>
+      <View className="w-[35%] flex items-center justify-center">
         {status && (
-          <Text className={`text-sm ${status == "Next" ? "text-primary-900 bg-primary-100 border border-primary-400" : "text-purple-900 bg-purple-100 border border-purple-400 "} shadow-md px-4 rounded-full py-1`}>
-            {status}
+          <Text
+            className={`text-sm ${
+              status == "Next"
+                ? "text-primary-900 bg-primary-50 border border-primary-400"
+                : "text-purple-900 bg-purple-100 border border-purple-400 "
+            } py-1 px-2 rounded-full`}
+          >
+            {status} Sche.
           </Text>
         )}
       </View>

@@ -4,6 +4,8 @@ import * as MapLibreGL from "@maplibre/maplibre-react-native";
 import campusArea from "@/assets/routes/campus.json";
 import { generateMarkers, selectRoutePolyline } from "@/utils/mappingHelper";
 import busMarker from "@/assets/images/navigatorArrow3.png";
+import UniIcon from "@/assets/images/uni-2.png";
+import pinIcon from "@/assets/images/red-pin-marker.png";
 
 const MapComponent = ({ location, zoom, recenterMap, userData, activeBuses, setZoom }) => {
   return (
@@ -12,10 +14,12 @@ const MapComponent = ({ location, zoom, recenterMap, userData, activeBuses, setZ
       style={styles.map}
       onRegionDidChange={(event) => setZoom(event.properties.zoom)}
     >
+      {/*------ Recentering map -------- */}
       {recenterMap && location && (
         <MapLibreGL.Camera zoomLevel={zoom} centerCoordinate={[location.longitude, location.latitude]} />
       )}
 
+      {/* --------- Load tile --------- */}
       <MapLibreGL.RasterSource
         id="osm"
         tileUrlTemplates={["https://tile.openstreetmap.org/{z}/{x}/{y}.png"]}
@@ -24,18 +28,21 @@ const MapComponent = ({ location, zoom, recenterMap, userData, activeBuses, setZ
         <MapLibreGL.RasterLayer id="osmLayer" sourceID="osm" />
       </MapLibreGL.RasterSource>
 
-      <MapLibreGL.ShapeSource id="polygonSource" shape={campusArea}>
+      {/* --------- Campus Icon ------- */}
+      {/* <MapLibreGL.ShapeSource id="polygonSource" shape={campusArea}>
         <MapLibreGL.FillLayer id="polygonLayer" style={{ fillColor: "rgba(255, 0, 100, 0.4)" }} />
-      </MapLibreGL.ShapeSource>
+      </MapLibreGL.ShapeSource> */}
 
+      {/* ----- Route highlighter ------ */}
       <MapLibreGL.ShapeSource id="routeSource" shape={selectRoutePolyline(userData?.route || "")}>
         <MapLibreGL.LineLayer
           id="routeLayer"
-          style={{ lineColor: "black", lineWidth: 2, lineCap: "round", lineJoin: "round" }}
+          style={{ lineColor: "#2e2e2e", lineWidth: 2, lineCap: "round", lineJoin: "round" }}
         />
       </MapLibreGL.ShapeSource>
 
-      <MapLibreGL.Images images={{ marker: busMarker }} />
+      {/* ---- Image Load ------ */}
+      <MapLibreGL.Images images={{ marker: busMarker, UniIcon: UniIcon, pinIcon: pinIcon }} />
 
       {/* -----Show buses location-------*/}
       <MapLibreGL.Animated.ShapeSource
@@ -47,10 +54,10 @@ const MapComponent = ({ location, zoom, recenterMap, userData, activeBuses, setZ
         <MapLibreGL.Animated.SymbolLayer id="busMarkerLayer" style={styles.busMarker} />
       </MapLibreGL.Animated.ShapeSource>
 
-      {/* Show user location */}
+      {/* --------- Show user location ----------*/}
       {location && (
         <MapLibreGL.ShapeSource
-          id="userLocation"
+          id="userLocation-1"
           shape={{
             type: "FeatureCollection",
             features: [
@@ -64,12 +71,57 @@ const MapComponent = ({ location, zoom, recenterMap, userData, activeBuses, setZ
             ],
           }}
         >
-          <MapLibreGL.CircleLayer id="userShadow" style={styles.userShadow} />
-          <MapLibreGL.CircleLayer id="userDot" style={styles.userDot} />
+          <MapLibreGL.CircleLayer id="userShadow-1" style={styles.userShadow} />
+          <MapLibreGL.CircleLayer id="userDot-1" style={styles.userDot} />
         </MapLibreGL.ShapeSource>
       )}
 
-      
+      {/* ------ University and Trasnport Location Symbol */}
+      <MapLibreGL.ShapeSource
+        id="userLocation-2"
+        shape={{
+          type: "FeatureCollection",
+          features: [
+            {
+              type: "Feature",
+              geometry: {
+                type: "Point",
+                coordinates: [90.320463, 23.87739],
+              },
+              properties: {
+                icon: "UniIcon", // matches the key in MapLibreGL.Images
+                title: "DIU Campus",
+              },
+            },
+            {
+              type: "Feature",
+              geometry: {
+                type: "Point",
+                coordinates: [90.322004, 23.876107],
+              },
+              properties: {
+                icon: "pinIcon", // matches the key in MapLibreGL.Images
+                title: "DIU Transport",
+              },
+            },
+          ],
+        }}
+      >
+        <MapLibreGL.SymbolLayer
+          id="customMarkerLayer"
+          style={{
+            iconImage: ["get", "icon"],
+            iconSize: 0.06,
+            iconAllowOverlap: true,
+            textField: ["get", "title"], // shows "DIU"
+            textSize: 15,
+            textOffset: [0, -2.5], // adjust label position below the icon
+            textAnchor: "top",
+            textAllowOverlap: false,
+            textColor: "#000", // label text color
+          }}
+        />
+      </MapLibreGL.ShapeSource>
     </MapLibreGL.MapView>
   );
 };
@@ -113,7 +165,7 @@ const styles = StyleSheet.create({
     circleStrokeWidth: 2,
   },
   calloutContainer: {
-    backgroundColor: "white",
+    backgroundColor: "red",
     padding: 6,
     borderRadius: 6,
     borderColor: "#333",

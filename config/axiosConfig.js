@@ -2,7 +2,7 @@ import axios from "axios";
 import Constants from "expo-constants";
 
 
-const LOCAL_API_URL = "http://192.168.1.2:4000/api/v1";
+const LOCAL_API_URL = "http://192.168.1.4:4000/api/v1";
 const SERVER_URL = `${Constants.expoConfig.extra.API_URL}/api/v1`;
 console.log("SERVER_URL", LOCAL_API_URL);
 

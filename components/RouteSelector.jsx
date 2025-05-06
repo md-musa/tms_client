@@ -108,7 +108,7 @@ const RouteSelector = ({ onRouteChange }) => {
       </View>
 
       <Link className="text-right text-white mt-4 text-md font-semibold" href="/home/schedules">
-        <Text>View all {">"} </Text>
+        <Text >View all {">"} </Text>
       </Link>
     </View>
   );
