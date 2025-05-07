@@ -16,7 +16,7 @@ export function generateMarkers(activeBuses) {
     },
     properties: {
       icon: "marker",
-      title: `${cpfl(data.trip.busName)}\n Going to ${data.trip.direction.split("_").pop()}\n${
+      title: `${cpfl(data.trip.busName)}\n${
         cpfl(data.trip.busType) + " bus"
       }\n${(data.speed * 3.6).toFixed(2)} km/h`,
       direction: data.trip.direction,

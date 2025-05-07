@@ -15,9 +15,6 @@ export default AvailableBusListCard = ({ item, centerMapAndHighLightBus }) => {
           {trip.busName.charAt(0).toUpperCase() + trip.busName.slice(1) + ` | ${(speed * 3.6).toFixed(2)} km/h`}
         </Text>
         <View className="flex-row">
-          <Text className="text-sm capitalize">
-            Going to {trip.direction.split("_").pop()} | 
-          </Text>
           <Text className="text-sm bg-primary-800 px-2 text-white rounded-full capitalize">{trip.busType} Bus</Text>
         </View>
         {/* <View

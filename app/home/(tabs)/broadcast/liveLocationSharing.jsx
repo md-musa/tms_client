@@ -1,32 +1,34 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, Alert, StyleSheet, Image } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { View, Text, TouchableOpacity, Alert, StyleSheet, Image, ActivityIndicator, StatusBar } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import useLocation from "@/hook/useLocation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBroadcast } from "@/contexts/BroadcastContext";
 import socket from "@/config/socket";
 import * as MapLibreGL from "@maplibre/maplibre-react-native";
-import campusArea from "@/assets/routes/campus.json";
-import { generateMarkers, selectRoutePolyline } from "@/utils/mappingHelper";
+import { selectRoutePolyline } from "@/utils/mappingHelper";
 import busMarker from "@/assets/images/navigatorArrow.png";
+import UniIcon from "@/assets/images/uni-2.png";
+import pinIcon from "@/assets/images/red-pin-marker.png";
+import StatusOverlayComponent from "@/components/UI/StatusOverlayComponent";
+import { useRouter } from "expo-router";
 
-const Loading = () => <Text>Loading...</Text>;
+function cpfl(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
 
 function LiveLocationSharing() {
+  const router = useRouter();
   const { location } = useLocation();
   const { userData } = useAuth();
   const { broadcastData } = useBroadcast();
-  const [watchingCount, setWatchingCount] = useState(25); // Example count
-  const [routeName, setRouteName] = useState("Campus to Uttara");
-  const [busName, setBusName] = useState("Bus 1");
+  const [routeName] = useState("Campus to Uttara");
   const [isSharing, setIsSharing] = useState(true); // Track if sharing is active
   const [isLoading, setIsLoading] = useState(true); // Track loading state
 
-  const [activeBuses, setActiveBuses] = useState({});
   const [currentlyConnectedUserCount, setCurrentlyConnectedUserCount] = useState(0);
   const [recenterMap, setRecenterMap] = useState(true);
   const [zoom, setZoom] = useState(12);
-  const [showCallout, setShowCallout] = useState(false);
 
   // Check if data is loaded
   useEffect(() => {
@@ -69,26 +71,59 @@ function LiveLocationSharing() {
 
   // Handle stopping location sharing
   const handleStopSharing = () => {
-    if (userData?.route?._id) {
-      socket.emit("stop-broadcast", userData.route._id); // Notify server to stop broadcasting
-      setIsSharing(false); // Update sharing state
-      Alert.alert("Sharing Stopped", "Location sharing has been stopped.");
-    }
+    Alert.alert(
+      "Stop Sharing?",
+      "Are you sure you want to stop sharing the bus location?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Confirm",
+          onPress: () => {
+            if (userData?.route?._id) {
+              socket.emit("stop-broadcast", userData.route._id);
+              setIsSharing(false);
+              router.back();
+            }
+          },
+          style: "destructive",
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  const mapRef = useRef(null);
+
+  const centerToUserLocation = () => {
+    setZoom(13);
+    mapRef.current?.setCamera({
+      center: [location.longitude, location.latitude],
+      zoom: 13,
+      animationDuration: 500,
+    });
   };
 
   // Show loading state if data is not ready
   if (isLoading) {
-    return <Loading />;
+    return <ActivityIndicator size="large" color="#0000ff" />;
   }
 
   return (
     <View className="flex-1 bg-gray-100">
-      <MapLibreGL.MapView style={styles.map} onRegionDidChange={(event) => setZoom(event.properties.zoom)}>
-        <MapLibreGL.Camera
-          zoomLevel={zoom}
-          centerCoordinate={recenterMap ? [location.longitude, location.latitude] : undefined}
-        />
+      <StatusBar barStyle="light-content" hidden={true} />
 
+      <MapLibreGL.MapView
+        attributionEnabled={true}
+        style={styles.map}
+        onRegionDidChange={(event) => setZoom(event.properties.zoom)}
+      >
+        {/*------ Recentering map -------- */}
+        <MapLibreGL.Camera zoomLevel={zoom} centerCoordinate={[location.longitude, location.latitude]} />
+
+        {/* --------- Load tile --------- */}
         <MapLibreGL.RasterSource
           id="osm"
           tileUrlTemplates={["https://tile.openstreetmap.org/{z}/{x}/{y}.png"]}
@@ -97,35 +132,59 @@ function LiveLocationSharing() {
           <MapLibreGL.RasterLayer id="osmLayer" sourceID="osm" />
         </MapLibreGL.RasterSource>
 
-        <MapLibreGL.ShapeSource id="polygonSource" shape={campusArea}>
-          <MapLibreGL.FillLayer id="polygonLayer" style={{ fillColor: "rgba(255, 0, 100, 0.4)" }} />
-        </MapLibreGL.ShapeSource>
-
+        {/* ----- Route highlighter ------ */}
         <MapLibreGL.ShapeSource id="routeSource" shape={selectRoutePolyline(userData?.route || "")}>
           <MapLibreGL.LineLayer
             id="routeLayer"
-            style={{ lineColor: "black", lineWidth: 2, lineCap: "round", lineJoin: "round" }}
+            style={{ lineColor: "#2e2e2e", lineWidth: 2, lineCap: "round", lineJoin: "round" }}
           />
         </MapLibreGL.ShapeSource>
 
-        <MapLibreGL.Images images={{ marker: busMarker }} />
+        {/* ---- Image Load ------ */}
+        <MapLibreGL.Images images={{ marker: busMarker, UniIcon: UniIcon, pinIcon: pinIcon }} />
 
-        {/* <MapLibreGL.MarkerView
-          coordinate={[location.longitude, location.latitude]}
-        >
-          
-          <View style={styles.marker}>
-            <Text style={styles.markerText}>📍</Text>
-          </View>
+        {/* --------- Show Bus Location ----------*/}
+        {location && (
+          <MapLibreGL.ShapeSource
+            id="userLocation-1"
+            shape={{
+              type: "FeatureCollection",
+              features: [
+                {
+                  type: "Feature",
+                  geometry: {
+                    type: "Point",
+                    coordinates: [location.longitude, location.latitude],
+                  },
+                  properties: {
+                    icon: "marker",
+                    title: `${cpfl(broadcastData.bus.name)}\n${cpfl(broadcastData.busType)} bus\n${(
+                      location.speed * 3.6
+                    ).toFixed(2)} km/h`,
+                    heading: location.heading,
+                  },
+                },
+              ],
+            }}
+          >
+            <MapLibreGL.CircleLayer id="userShadow3" style={styles.busShadow1} />
+            <MapLibreGL.CircleLayer id="userShadow2" style={styles.busShadow2} />
+            <MapLibreGL.Animated.SymbolLayer id="busMarkerLayer" style={styles.busMarker} />
+          </MapLibreGL.ShapeSource>
+        )}
+
+        {/* ------ University and Trasnport Location Symbol */}
+        <MapLibreGL.MarkerView coordinate={[90.320463, 23.87739 + 0.002]}>
           <MapLibreGL.Callout>
             <View style={styles.calloutContainer}>
-              <Text style={styles.calloutDescription}>Speed: {Math.ceil(location.speed)} kmph</Text>
+              <Text style={styles.calloutDescription} className="capitalize">
+                DIU Campus
+              </Text>
             </View>
           </MapLibreGL.Callout>
-        </MapLibreGL.MarkerView> */}
-
-        <MapLibreGL.Animated.ShapeSource
-          id="busMarkers"
+        </MapLibreGL.MarkerView>
+        <MapLibreGL.ShapeSource
+          id="userLocation-2"
           shape={{
             type: "FeatureCollection",
             features: [
@@ -133,66 +192,95 @@ function LiveLocationSharing() {
                 type: "Feature",
                 geometry: {
                   type: "Point",
-                  coordinates: [location.longitude, location.latitude],
+                  coordinates: [90.320463, 23.87739],
                 },
                 properties: {
-                  icon: "marker",
-                  title: `${broadcastData.bus.name}`,
-                  speed: `${Math.ceil(location.speed)} m/s`,
-                  heading: location.heading,
+                  icon: "UniIcon", // matches the key in MapLibreGL.Images
+                  title: "DIU Campus",
+                },
+              },
+              {
+                type: "Feature",
+                geometry: {
+                  type: "Point",
+                  coordinates: [90.322004, 23.876107],
+                },
+                properties: {
+                  icon: "pinIcon", // matches the key in MapLibreGL.Images
+                  title: "DIU Transport",
                 },
               },
             ],
           }}
         >
-          <MapLibreGL.CircleLayer id="userShadow3" style={styles.busShadow1} />
-          <MapLibreGL.CircleLayer id="userShadow2" style={styles.busShadow2} />
-          <MapLibreGL.Animated.SymbolLayer id="busMarkerLayer" style={styles.busMarker} />
-        </MapLibreGL.Animated.ShapeSource>
+          <MapLibreGL.SymbolLayer
+            id="customMarkerLayer"
+            style={{
+              iconImage: ["get", "icon"],
+              iconSize: 0.06,
+              iconAllowOverlap: true,
+              textField: ["get", "title"], // shows "DIU"
+              textSize: 15,
+              textOffset: [0, -2.5], // adjust label position below the icon
+              textAnchor: "top",
+              textAllowOverlap: false,
+              textColor: "#000", // label text color
+            }}
+          />
+        </MapLibreGL.ShapeSource>
       </MapLibreGL.MapView>
 
-      {/* <View className="relative h-2/3 rounded-lg overflow-hidden shadow-lg"> */}
-      {/* Watching Count Label */}
-      {/* <View className="absolute top-3 left-3 bg-black/60 px-3 py-1 rounded-lg">
-          <Text className="text-white text-sm">Watching: {watchingCount}</Text>
-        </View> */}
+      <StatusOverlayComponent currentlyConnectedUserCount={currentlyConnectedUserCount} activeBuses={0} />
 
-      {/* Route Name Label */}
-      {/* <View className="absolute top-3 right-3 bg-blue-600 px-3 py-1 rounded-lg">
-          <Text className="text-white text-sm">{routeName}</Text>
-        </View> */}
+      <TouchableOpacity
+        className="absolute bottom-60 right-5 bg-white border border-gray-300 rounded-full shadow flex-row p-3 items-center justify-center"
+        onPress={centerToUserLocation}
+      >
+        <Ionicons name="locate" size={28} color="black" />
+      </TouchableOpacity>
 
-      {/* Fullscreen Icon */}
-      {/* <TouchableOpacity className="absolute bottom-3 right-3 bg-white p-2 rounded-full shadow-lg">
-          <Ionicons name="expand" size={24} color="black" />
-        </TouchableOpacity>
-      </View> */}
+      <TouchableOpacity
+        className="absolute top-10 left-5 bg-white border border-gray-300 rounded-full shadow flex-row p-2 items-center justify-center"
+        onPress={() => router.back()}
+      >
+        <Ionicons name="arrow-back" size={25} color="black" />
+      </TouchableOpacity>
 
-      {/* Route Details */}
+      {/*-------Route Details---------*/}
       <View className="px-4 mb-4">
-        <View className="bg-white p-4 mt-4 rounded-lg shadow-md flex-row items-center">
-          <View className="flex-[0.1] items-end px-2">
+        {/* Info Card */}
+        <View className="bg-white p-4 mt-4 rounded-2xl shadow-md flex-row items-center space-x-3">
+          {/* Alert Icon */}
+          <View className="flex-[0.15] items-center mr-2">
             <Image
               source={{ uri: "https://media.lordicon.com/icons/wired/outline/1657-alert.gif" }}
-              style={{ width: 40, height: 40 }}
+              style={{ width: 44, height: 44 }}
               resizeMode="contain"
             />
           </View>
-          {/* Left Section (70%) */}
-          <View className="flex-[0.6] px-2">
-            <Text className="text-lg font-bold text-gray-800">Route: {routeName}</Text>
-            <Text className="text-md text-gray-600 mt-1">Bus: {broadcastData.bus.name}</Text>
+
+          {/* Info Text */}
+          <View className="flex-[0.65]">
+            <Text className="text-sm text-gray-700">
+              Sharing <Text className="font-bold capitalize">{broadcastData.bus.name}</Text> location for route{" "}
+              <Text className="font-bold">{routeName}</Text>.
+            </Text>
           </View>
 
-          {/* Right Section (30%) */}
+          {/* Speed */}
           <View className="flex-[0.2] items-end">
-            <Text className="text-2xl text-gray-600 text-right">{Math.ceil(location.speed)} m/s</Text>
+            <View className="bg-gray-100 px-2 py-1 rounded-lg">
+              <Text className="text-sm font-medium text-gray-800">{Math.ceil(location.speed * 3.6)} km/h</Text>
+            </View>
           </View>
         </View>
 
-        {/* Stop Location Sharing Button */}
-        <TouchableOpacity className="bg-red-600 py-3 rounded-xl shadow-lg mt-6" onPress={handleStopSharing}>
-          <Text className="text-white text-center font-semibold text-lg">Stop Location Sharing</Text>
+        {/* Stop Sharing Button */}
+        <TouchableOpacity
+          className="bg-red-700 py-2 rounded-xl shadow-md mt-6 mb-5 active:opacity-80"
+          onPress={handleStopSharing}
+        >
+          <Text className="text-white text-center font-semibold text-lg">Stop Bus Location Sharing</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -213,19 +301,7 @@ const styles = StyleSheet.create({
     circleColor: "black",
     circleBlur: 0,
   },
-  busMarker: {
-    iconImage: "marker",
-    iconSize: 0.025,
-    iconAnchor: "center",
-    iconRotate: ["get", "heading"],
-    textField: ["get", "title"],
-    textSize: 11,
-    textColor: "rgba(16, 187, 103, 1)",
-    textAnchor: "bottom",
-    textOffset: [0, 2.5],
-    textHaloColor: "black",
-    textHaloWidth: 0.2,
-  },
+
   userShadow: {
     circleRadius: 20,
     circleColor: "rgba(0, 50, 255, 0.3)",
@@ -236,12 +312,6 @@ const styles = StyleSheet.create({
     circleColor: "blue",
     circleStrokeColor: "white",
     circleStrokeWidth: 2,
-  },
-  calloutContainer: {
-    backgroundColor: "white",
-    padding: 10,
-    borderRadius: 5,
-    width: 150,
   },
   calloutTitle: {
     fontWeight: "bold",
@@ -262,6 +332,33 @@ const styles = StyleSheet.create({
   },
   markerText: {
     fontSize: 20,
+  },
+
+  busMarker: {
+    iconImage: "marker",
+    iconSize: 0.025,
+    iconAnchor: "center",
+    iconRotate: ["get", "heading"],
+    textField: ["get", "title"],
+    textSize: 11,
+    textColor: "black",
+    textAnchor: "bottom",
+    textOffset: [0, 6],
+    textHaloColor: "black",
+    textHaloWidth: 0.1,
+  },
+
+  calloutContainer: {
+    backgroundColor: "white",
+    padding: 3,
+    borderRadius: 6,
+    borderColor: "gray",
+    borderWidth: 1,
+  },
+  pointMarker: {
+    iconImage: "customMarker",
+    iconSize: 0.5,
+    iconAllowOverlap: true,
   },
 });
 
