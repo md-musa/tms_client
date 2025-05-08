@@ -41,13 +41,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => <FontAwesome5 name="broadcast-tower" size={21} color={color} />,
         }}
       />
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="notification"
         options={{
           title: "Notifications",
           tabBarIcon: ({ color, size }) => <Ionicons name="notifications-outline" size={21} color={color} />,
         }}
-      />
+      /> */}
       <Tabs.Screen
         name="setting"
         options={{

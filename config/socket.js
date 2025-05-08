@@ -1,11 +1,9 @@
 import { io } from "socket.io-client";
 
-// Replace with your server URL
-const LOCAL_API_URL = "http://192.168.1.2:4000";
-const SOCKET_SERVER_URL = "https://tms-dcro.onrender.com";
+// const LOCAL_API_URL = "http://192.168.1.2:4000";
+const SERVER_URL = `https://tms-dcro.onrender.com/api/v1`;
 
-// Initialize the socket connection
-const socket = io(LOCAL_API_URL, {
+const socket = io(SERVER_URL, {
   autoConnect: true, // Automatically connect when the socket is created
   reconnection: true, // Enable reconnection
   reconnectionAttempts: 5, // Number of reconnection attempts

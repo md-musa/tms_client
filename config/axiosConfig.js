@@ -1,13 +1,11 @@
 import axios from "axios";
-import Constants from "expo-constants";
 
 
-const LOCAL_API_URL = "http://192.168.1.2:4000/api/v1";
-const SERVER_URL = `${Constants.expoConfig.extra.API_URL}/api/v1`;
-console.log("SERVER_URL", LOCAL_API_URL);
+// const LOCAL_API_URL = "http://192.168.1.2:4000/api/v1";
+const SERVER_URL = `https://tms-dcro.onrender.com/api/v1`;
 
 const apiClient = axios.create({
-  baseURL: LOCAL_API_URL,
+  baseURL: SERVER_URL,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",

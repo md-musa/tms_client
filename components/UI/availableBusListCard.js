@@ -1,7 +1,6 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import busMarker from "@/assets/images/bus-marker.png";
-import busImage from "@/assets/images/bug_front.png";
+import busImage from "@/assets/images/icon.png";
 
 export default AvailableBusListCard = ({ item, centerMapAndHighLightBus }) => {
   if (!item) return <Text>Not available</Text>;

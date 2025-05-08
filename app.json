@@ -47,7 +47,7 @@
       "typedRoutes": true
     },
     "extra": {
-      "API_URL": "https://tms-dcro.onrender.com",
+      "SERVER_URL": "https://tms-dcro.onrender.com",
       "router": {
         "origin": false
       },

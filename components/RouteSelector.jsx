@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Image, Alert } from "react-native";
+import { View, Text, Image, Alert, ActivityIndicator } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import busImage from "@/assets/images/bug_front.png";
+import busImage from "@/assets/images/icon.png";
 import { useAuth } from "@/contexts/AuthContext";
 import apiClient from "@/config/axiosConfig";
 import { findOngoingOrNextSchedule } from "@/utils/scheduleHelper";
@@ -50,6 +50,8 @@ const RouteSelector = ({ onRouteChange }) => {
     onRouteChange(selectedRouteData);
   };
 
+  if (!schedules) return <ActivityIndicator size="large" color="#0000ff" />;
+
   let toCampusStudent, fromCampusStudent, toCampusEmployee, fromCampusEmployee;
   if (schedules) {
     toCampusStudent = findOngoingOrNextSchedule(schedules.to_campus.student);
@@ -65,12 +67,16 @@ const RouteSelector = ({ onRouteChange }) => {
         <Picker
           selectedValue={currentRoute?._id}
           onValueChange={handleRouteChange}
-          style={{ flex: 1, backgroundColor: "white", }}
+          style={{ flex: 1, backgroundColor: "white" }}
           dropdownIconColor="black"
         >
           <Picker.Item label="Select a route" value="" />
           {availRoutes?.map((route) => (
-            <Picker.Item key={route?._id} label={`${route.name}: ${route.startLocation} <> ${route.endLocation}`} value={route._id} />
+            <Picker.Item
+              key={route?._id}
+              label={`${route.name}: ${route.startLocation} <> ${route.endLocation}`}
+              value={route._id}
+            />
           ))}
         </Picker>
       </View>
@@ -108,7 +114,7 @@ const RouteSelector = ({ onRouteChange }) => {
       </View>
 
       <Link className="text-right text-white mt-4 text-md font-semibold" href="/home/schedules">
-        <Text >View all {">"} </Text>
+        <Text>View all {">"} </Text>
       </Link>
     </View>
   );

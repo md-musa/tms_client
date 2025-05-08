@@ -1,6 +1,7 @@
 import moment from "moment";
 
 export function findOngoingOrNextSchedule(schedules) {
+  if (!schedules || schedules.length === 0) return null; // Check if schedules are available
   const now = moment(); // Get current time
 
   let ongoingSchedule = null;
@@ -33,6 +34,7 @@ export function findOngoingOrNextSchedule(schedules) {
 }
 
 export function processSchedules(schedules) {
+  if (!schedules) return {};
   const now = moment();
 
   // Helper function to determine the status
