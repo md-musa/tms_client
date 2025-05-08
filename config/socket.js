@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
 
 // Replace with your server URL
-const LOCAL_API_URL = "http://192.168.1.4:4000";
+const LOCAL_API_URL = "http://192.168.1.2:4000";
 const SOCKET_SERVER_URL = "https://tms-dcro.onrender.com";
 
 // Initialize the socket connection

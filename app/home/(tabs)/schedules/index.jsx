@@ -44,11 +44,13 @@ const BusSchedule = () => {
         {schedules && (
           <View className="flex-row">
             <Text className="mx- px-4 capitalize py-2 border bg-indigo-500 rounded-full text-white border-gray-300">
-              {schedules?.to_campus.student[0].mode} Routine
+              {/* {schedules?.to_campus?.student[0].mode} Routine */}
+              Regular Routine
             </Text>
             <Text className="text-3xl font-light text-gray-400"> | </Text>
             <Text className="mx-1 px-4 capitalize py-2 border bg-indigo-500 rounded-full text-white border-gray-300">
-              {schedules?.to_campus.student[0].operatingDays}
+              {/* {schedules?.to_campus.student[0].operatingDays} */}
+              Weekdays
             </Text>
           </View>
         )}

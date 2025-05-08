@@ -3,9 +3,7 @@ import SecureStorage from "@/utils/asyncStorage";
 import { loginUser, registerUser } from "@/services/authService";
 import { useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
-import * as SplashScreen from 'expo-splash-screen';
-
-
+import * as SplashScreen from "expo-splash-screen";
 
 const AuthContext = createContext();
 
@@ -14,9 +12,9 @@ export const AuthProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [authInitialized, setAuthInitialized] = useState(false);
- 
-   // Prevent splash screen from hiding automatically
-   SplashScreen.preventAutoHideAsync();
+
+  // Prevent splash screen from hiding automatically
+  SplashScreen.preventAutoHideAsync();
 
   // Load user data on initial render
   useEffect(() => {
@@ -169,8 +167,9 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       setLoading(true);
-      await Promise.all([SecureStorage.removeItem("auth-1"), SecureStorage.removeItem("route")]);
-      setUserData(null);
+      await Promise.all([SecureStorage.deleteItem("auth-1"), SecureStorage.deleteItem("route")]);
+
+      setUserData(null); // ✔ clears auth context
 
       Toast.show({
         type: "success",
@@ -178,7 +177,7 @@ export const AuthProvider = ({ children }) => {
         text2: "You have been successfully logged out",
       });
 
-      router.replace("/");
+      router.replace("/"); // ✔ navigate back to root
     } catch (err) {
       console.error("Logout Error:", err);
       Toast.show({
@@ -190,7 +189,6 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   };
-
 
   return (
     <AuthContext.Provider
