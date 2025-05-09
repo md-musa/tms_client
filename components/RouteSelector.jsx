@@ -12,7 +12,7 @@ const RouteSelector = ({ onRouteChange }) => {
   const [currentRoute, setCurrentRoute] = useState(userData?.route);
   const [availRoutes, setAvailRoutes] = useState([]);
   const [schedules, setSchedules] = useState(null);
-  console.log("🛣", currentRoute);
+  // console.log("🛣", currentRoute);
 
   useEffect(() => {
     const fetchRoutes = async () => {
@@ -50,14 +50,19 @@ const RouteSelector = ({ onRouteChange }) => {
     onRouteChange(selectedRouteData);
   };
 
-  if (!schedules) return <ActivityIndicator size="large" color="#0000ff" />;
+  // if (!schedules) return <ActivityIndicator size="large" color="#0000ff" />;
 
   let toCampusStudent, fromCampusStudent, toCampusEmployee, fromCampusEmployee;
   if (schedules) {
+    // console.log("schedules", schedules);
     toCampusStudent = findOngoingOrNextSchedule(schedules.to_campus.student);
     fromCampusStudent = findOngoingOrNextSchedule(schedules.from_campus.student);
     toCampusEmployee = findOngoingOrNextSchedule(schedules.to_campus.employee);
     fromCampusEmployee = findOngoingOrNextSchedule(schedules.from_campus.employee);
+    //   console.log("toCampusEmployee", toCampusEmployee);
+    //   console.log("fromCampusEmployee", fromCampusEmployee);
+    //   console.log("toCampusStudent", toCampusStudent);
+    //   console.log("fromCampusStudent", fromCampusStudent);
   }
 
   return (

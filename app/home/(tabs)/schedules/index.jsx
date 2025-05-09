@@ -37,6 +37,7 @@ const BusSchedule = () => {
     toCampusEmployee = processSchedules(schedules?.to_campus.employee);
     fromCampusEmployee = processSchedules(schedules?.from_campus.employee);
   }
+
   return (
     <ScrollView className="flex-1 bg-white p-4">
       {/* View Stoppage Button */}
@@ -120,9 +121,13 @@ const BusSchedule = () => {
                       <Text className="text-gray-600 font-semibold text-md">{userData?.route?.startLocation}</Text>
                     </View>
 
-                    {toCampusStudent?.map((schedule) => (
-                      <ScheduleCard key={schedule._id} schedule={schedule} />
-                    ))}
+                    {toCampusStudent?.length > 0 &&
+                      toCampusStudent?.map((schedule) => <ScheduleCard key={schedule._id} schedule={schedule} />)}
+                    {toCampusStudent?.length == 0 && (
+                      <Text className="text-gray-600 bg-white shadow-sm font-semibold text-sm text-center my-3 border py-3 rounded-lg border-gray-300">
+                        No schedule found
+                      </Text>
+                    )}
                   </View>
                   <View className="">
                     <View className="flex-row items-center justify-center bg-white px-4 py-1 rounded-2xl my-2 mt-5  border-gray-300">
@@ -131,9 +136,13 @@ const BusSchedule = () => {
                       <Text className="text-gray-600 font-semibold text-md">{userData?.route?.endLocation}</Text>
                     </View>
 
-                    {fromCampusStudent?.map((schedule) => (
-                      <ScheduleCard key={schedule._id} schedule={schedule} />
-                    ))}
+                    {fromCampusStudent?.length > 0 &&
+                      fromCampusStudent?.map((schedule) => <ScheduleCard key={schedule._id} schedule={schedule} />)}
+                    {fromCampusStudent?.length == 0 && (
+                      <Text className="text-gray-600 bg-white shadow-sm font-semibold text-sm text-center my-3 border py-3 rounded-lg border-gray-300">
+                        No schedule found
+                      </Text>
+                    )}
                   </View>
                 </>
               ) : (
@@ -145,19 +154,28 @@ const BusSchedule = () => {
                       <Text className="text-gray-600 font-semibold text-md">{userData?.route?.startLocation}</Text>
                     </View>
 
-                    {toCampusEmployee?.map((schedule) => (
-                      <ScheduleCard key={schedule._id} schedule={schedule} />
-                    ))}
+                    {toCampusEmployee?.length > 0 &&
+                      toCampusEmployee?.map((schedule) => <ScheduleCard key={schedule._id} schedule={schedule} />)}
+                    {toCampusEmployee?.length == 0 && (
+                      <Text className="text-gray-600 bg-white shadow-sm font-semibold text-sm text-center my-3 border py-3 rounded-lg border-gray-300">
+                        No schedule found
+                      </Text>
+                    )}
                   </View>
                   <View className="">
-                  <View className="flex-row items-center justify-center bg-white px-4 py-1 rounded-2xl my-2 mt-5  border-gray-300">
+                    <View className="flex-row items-center justify-center bg-white px-4 py-1 rounded-2xl my-2 mt-5  border-gray-300">
                       <Text className="text-gray-600 font-semibold text-md">{userData?.route?.startLocation}</Text>
                       <Feather name="arrow-right-circle" size={20} color="#2563EB" className="mx-2" />
                       <Text className="text-gray-600 font-semibold text-md">{userData?.route?.endLocation}</Text>
                     </View>
-                    {fromCampusEmployee?.map((schedule) => (
-                      <ScheduleCard key={schedule._id} schedule={schedule} />
-                    ))}
+
+                    {fromCampusEmployee?.length > 0 &&
+                      fromCampusEmployee?.map((schedule) => <ScheduleCard key={schedule._id} schedule={schedule} />)}
+                    {fromCampusEmployee?.length == 0 && (
+                      <Text className="text-gray-600 bg-white shadow-sm font-semibold text-sm text-center my-3 border py-3 rounded-lg border-gray-300">
+                        No schedule found
+                      </Text>
+                    )}
                   </View>
                 </>
               )}

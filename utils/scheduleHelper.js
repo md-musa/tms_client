@@ -1,18 +1,18 @@
 import moment from "moment";
 
 export function findOngoingOrNextSchedule(schedules) {
-  if (!schedules || schedules.length === 0) return null; // Check if schedules are available
-  const now = moment(); // Get current time
+  if (!schedules || schedules.length === 0) return null; 
 
+  const now = moment(); 
   let ongoingSchedule = null;
   let nextSchedule = null;
   let nextScheduleTimeDiff = Infinity; // Store min difference for next schedule
 
   schedules.forEach((schedule) => {
     const scheduleTime = moment(schedule.time, "HH:mm"); // Parse schedule time
-    const scheduleEndTime = scheduleTime.clone().add(30, "minutes"); // Add 30 minutes
+    const scheduleEndTime = scheduleTime.clone().add(15, "minutes"); // Add 30 minutes
 
-    // Check if the current time is within schedule time to +30 minutes range
+    // Check if the current time is within schedule time to +15 minutes range
     if (now.isBetween(scheduleTime, scheduleEndTime)) {
       ongoingSchedule = { ...schedule, status: "ongoing" };
     }
@@ -34,13 +34,13 @@ export function findOngoingOrNextSchedule(schedules) {
 }
 
 export function processSchedules(schedules) {
-  if (!schedules) return {};
+  if (!schedules || schedules.length == 0) return [];
   const now = moment();
 
   // Helper function to determine the status
   const getStatus = (scheduleTime) => {
     const scheduleMoment = moment(scheduleTime, "HH:mm");
-    return now.isBetween(scheduleMoment, scheduleMoment.clone().add(30, "minutes")) ? "Ongoing" : null;
+    return now.isBetween(scheduleMoment, scheduleMoment.clone().add(15, "minutes")) ? "Ongoing" : null;
   };
 
   // Sort schedules by time
